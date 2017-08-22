@@ -1,0 +1,279 @@
+﻿@model IBM.WatsonDeveloperCloud.Discovery.v1.Model.ListEnvironmentsResponse
+
+@{
+    ViewData["Title"] = "Prueba Watson Discovery Service";
+}
+<h2>@ViewData["Title"]</h2>
+
+<h3>Listado de Entornos</h3>
+
+<p>@ViewData["Enviroments"]</p>
+
+<h3>Configuraciones</h3>
+
+<p>@ViewData["Configurations"]</p>
+
+
+<div id="divCreateConfig">
+    <label>Nombre Configuración</label>
+    <input type="text" id="queryCreateConfig" placeholder="Ingrese nombre de configuración" />
+    <input type="text" id="queryCreateModel" placeholder="Ingrese ID de modelo" />
+    <button id="btnCreateConfig" class="btn btn-warning">Crear</button>
+
+    <p id="pCreateConfig"></p>
+</div>
+
+<label>ID Configuración</label>
+<input type="text" id="queryConfigID" placeholder="Seleccione su configuración" />
+<button id="btnConfigID" class="btn btn-success">Consultar</button>
+<button id="btnEliminarConfig" class="btn btn-danger">Eliminar</button>
+
+<p id="pConfigID"></p>
+
+
+<div id="divModelUpdate" hidden>
+    <label>ID Model</label>
+    <input type="text" id="queryModelID" placeholder="Seleccione su modelo" />
+    <button id="btnModelID" class="btn btn-success">Actualizar</button>
+
+    <p id="pModelID"></p>
+</div>
+
+
+<h3>Colecciones</h3>
+
+<p>@ViewData["Collections"]</p>
+
+<div id="divCollections">
+    <label>ID Collection</label>
+    <input type="text" id="queryCollectionID" placeholder="Seleccione su colección" />
+    <button id="btnCollectionID" class="btn btn-success">Consultar</button>
+    <button id="btnEliminarCollectionID" class="btn btn-danger">Eliminar</button>
+
+    <p id="pCollectionID"></p>
+</div>
+
+<button id="btnSave" type="submit" class="btn btn-primary">Agregar Documento</button>
+
+
+<div id="createdDoc" style="margin-top:1rem;margin-bottom:1rem;"></div>
+
+
+
+
+<label>¿Qué le provoca hoy?</label>
+<input type="text" name="queryInput" placeholder="Escriba su consulta..." />
+<button id="btnQuery" class="btn btn-success">Consultar</button>
+
+@section Scripts {
+    <script type="text/javascript">
+
+        $(function () {
+            $('#btnSave').click(function () {
+
+                var _configid = $("#queryConfigID").val();
+                var _collecctionid = $("#queryCollectionID").val();
+
+
+                if (_configid == null || _configid == undefined) {
+                    alert("Debe ingresar un Código de Configuración");
+                    return;
+                }
+
+
+                if (_collecctionid == null || _collecctionid == undefined) {
+                    alert("Debe ingresar un Código de Colección");
+                    return;
+                }
+
+                var request = $.ajax({
+                    url: '@Url.Action("AddDocument", "Home")',
+                    method: 'POST',
+                    data: { collectionid: _collecctionid, configid: _configid }
+                });
+
+                request.done(function (obj) {
+                    $("#createdDoc").addClass("alert alert-info");
+                        $("#createdDoc").text("Nuevo documento creado. ID: " + obj);
+                    });
+
+                    request.fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
+            });
+
+
+            $('#btnCreateConfig').click(function () {
+
+                var _configname = $("#queryCreateConfig").val();
+                var _modelid = $("#queryCreateModel").val();
+
+                if (_configname == null || _configname == undefined) {
+                    alert("Debe ingresar un Nombre Configuración");
+                    return;
+                }
+
+                var request = $.ajax({
+                        url: '@Url.Action("CreateConfiguration", "Home")',
+                        method: 'POST',
+                        data: { configname: _configname, modelid: _modelid }
+                });
+
+                request.done(function (obj) {
+                    alert("Se creó la Configuración: " + obj);
+
+                    });
+
+                    request.fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
+            });
+
+            $('#btnConfigID').click(function () {
+
+                var _configid = $("#queryConfigID").val();
+
+                if (_configid == null || _configid == undefined) {
+                    alert("Debe ingresar un ID de Configuración");
+                    return;
+                }
+
+                var request = $.ajax({
+                        url: '@Url.Action("GetConfiguration", "Home")',
+                        method: 'POST',
+                        data: { configid: _configid }
+                });
+
+                request.done(function (obj) {
+                    $("#pConfigID").addClass("alert alert-warning");
+                    $("#pConfigID").text(obj);
+                    $("#divModelUpdate").show();
+
+                    });
+
+                    request.fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
+            });
+
+
+            $('#btnEliminarConfig').click(function () {
+
+                var _configid = $("#queryConfigID").val();
+
+                if (_configid == null || _configid == undefined) {
+                    alert("Debe ingresar un ID de Configuración");
+                    return;
+                }
+
+                var request = $.ajax({
+                        url: '@Url.Action("DeleteConfiguration", "Home")',
+                        method: 'POST',
+                        data: { configid: _configid }
+                });
+
+                request.done(function (obj) {
+                    alert("Se eliminó la Configuración: " + obj);
+
+                    });
+
+                    request.fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
+            });
+
+
+            $('#btnModelID').click(function () {
+
+                var _configid = $("#queryConfigID").val();
+                var _modelid = $("#queryModelID").val();
+
+                if (_configid == null || _configid == undefined) {
+                    alert("Debe ingresar un ID de Configuración");
+                    return;
+                }
+
+                if (_modelid == null || _modelid == undefined) {
+                    alert("Debe ingresar un ID de Modelo");
+                    return;
+                }
+
+                var request = $.ajax({
+                        url: '@Url.Action("UpdateConfiguration", "Home")',
+                        method: 'POST',
+                        data: { configid: _configid, modelid: _modelid }
+                });
+
+                request.done(function (obj) {
+                    $("#pModelID").addClass("alert alert-danger");
+                    $("#pModelID").text(obj);
+
+                    });
+
+                    request.fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
+            });
+
+
+            $('#btnCollectionID').click(function () {
+
+                var _collectionid = $("#queryCollectionID").val();
+
+                if (_collectionid == null || _collectionid == undefined) {
+                    alert("Debe ingresar un ID de Colección");
+                    return;
+                }
+
+                var request = $.ajax({
+                        url: '@Url.Action("GetCollection", "Home")',
+                        method: 'POST',
+                        data: { collectionid: _collectionid }
+                });
+
+                request.done(function (obj) {
+                    $("#pCollectionID").addClass("alert alert-warning");
+                    $("#pCollectionID").text(obj);
+
+                    });
+
+                    request.fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
+            });
+
+
+            $('#btnEliminarCollectionID').click(function () {
+
+                var _collectionid = $("#queryCollectionID").val();
+
+                if (_collectionid == null || _collectionid == undefined) {
+                    alert("Debe ingresar un ID de Colección");
+                    return;
+                }
+
+                var request = $.ajax({
+                        url: '@Url.Action("DeleteCollection", "Home")',
+                        method: 'POST',
+                        data: { collectionid: _collectionid }
+                });
+
+                request.done(function (obj) {
+                    alert("Se eliminó la Colección: " + obj);
+
+                    });
+
+                    request.fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
+            });
+
+            $("#btnQuery").click(function () {
+                alert("En desarrollo");
+            });
+
+        }); //End Init
+
+
+    </script>
+}
