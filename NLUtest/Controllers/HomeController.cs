@@ -89,7 +89,7 @@ namespace NLUtest.Controllers
 
         public IActionResult About()
         {
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2016_12_01);
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
             ViewData["Enviroments"] = GetEnvironments();
             ViewData["Configurations"] = GetConfigurations();
@@ -122,72 +122,8 @@ namespace NLUtest.Controllers
         [HttpPost]
         public IActionResult CreateConfiguration(string configname, string modelid)
         {
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2016_12_01);
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
-            Configuration configuration = new Configuration()
-            {
-                Name = configname,
-                Description = "Creado desde API",
-                Enrichments = new List<Enrichment>()
-                {
-                    new Enrichment()
-                    {
-                        DestinationField = "enriched_text",
-                        SourceField = "text",
-                        EnrichmentName = "natural_language_understanding",
-                        Options = new EnrichmentOptions()
-                        {
-                            Extract = "entity,keyword,doc-sentiment,concept,taxonomy,relation,doc-emotion",
-                            Sentiment = true,
-                            Quotations = true
-                        }
-                    }
-                }
-            };
-
-            if (!string.IsNullOrEmpty(modelid))
-            {
-                configuration.Enrichments[0].Options.Model = modelid;
-            }
-
-
-            var result = _discovery.CreateConfiguration(_createdEnvironmentId, configuration);
-
-            if (result != null)
-            {
-                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
-                return Json(model);
-
-            }
-            else
-            {
-                return Json("Resultado nulo");
-            }
-        }
-
-        private string GetConfigurations()
-        {
-            Console.WriteLine(string.Format("\nCalling GetConfigurations()..."));
-
-            var result = _discovery.ListConfigurations(_createdEnvironmentId);
-
-            if (result != null)
-            {
-                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
-                return model;
-            }
-            else
-            {
-                return "Resultado nulo";
-            }
-        }
-
-
-
-        [HttpPost]
-        public IActionResult UpdateConfiguration(string configid, string modelid)
-        {
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2016_12_01);
 
             Conversions _conversions = new Conversions()
             {
@@ -329,30 +265,324 @@ namespace NLUtest.Controllers
                 JsonNormalizations = new List<NormalizationOperation>()
             };
 
-            Enrichment _enrichment = new Enrichment()
+            Configuration2 configuration = new Configuration2()
+            {
+                Name = configname,
+                Description = "Creado desde API",
+                Conversions = _conversions,
+                Enrichments = new List<Enrichment2>()
+                {
+                    new Enrichment2()
+                    {
+                        DestinationField = "enriched_text",
+                        SourceField = "text",
+                        EnrichmentName = "natural_language_understanding",
+                        Options = new EnrichmentOptions2()
+                    }
+                }
+            };
+
+
+
+            Features _features = new Features()
+            {
+                Entities = new EntitiesOptions()
+                {
+                    Sentiment = true,
+                    Emotion = true,
+                    Limit = 20,
+                    Model = modelid
+                },
+                Sentiment = new SentimentOptions()
+                {
+                    Document = true
+                },
+                Categories = new CategoriesOptions(),
+                Concepts = new ConceptsOptions()
+                {
+                    Limit = 8
+                },
+
+                Relations = new RelationsOptions()
+                {
+                    Model = modelid
+                },
+
+                Emotion = new EmotionOptions()
+                {
+                    Document = true
+                },
+                Keywords = new KeywordsOptions()
+                {
+                    Limit = 20,
+                    Sentiment = true,
+                    Emotion = true
+                },
+                SemanticRoles = new SemanticRolesOptions()
+                {
+                    Limit = 8,
+                    Entities = true,
+                    Keywords = true
+                }
+            };
+
+
+            if (!string.IsNullOrEmpty(modelid))
+            {
+                configuration.Enrichments[0].Options.Features = _features;
+            }
+            else
+            {
+                configuration.Enrichments[0].Options = new EnrichmentOptions2();
+            }
+
+
+            var result = _discovery.CreateConfiguration(_createdEnvironmentId, configuration);
+
+            if (result != null)
+            {
+                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return Json(model);
+
+            }
+            else
+            {
+                return Json("Resultado nulo");
+            }
+        }
+
+        private string GetConfigurations()
+        {
+            Console.WriteLine(string.Format("\nCalling GetConfigurations()..."));
+
+            var result = _discovery.ListConfigurations(_createdEnvironmentId);
+
+            if (result != null)
+            {
+                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return model;
+            }
+            else
+            {
+                return "Resultado nulo";
+            }
+        }
+
+
+
+        [HttpPost]
+        public IActionResult UpdateConfiguration(string configid, string modelid)
+        {
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
+
+            Conversions _conversions = new Conversions()
+            {
+                Pdf = new PdfSettings()
+                {
+                    Heading = new PdfHeadingDetection()
+                    {
+                        Fonts = new List<FontSetting>()
+                        {
+                           new FontSetting()
+                           {
+                               Level = (float)1.0,
+                               MinSize = (float)24.0,
+                               MaxSize = (float)80.0
+                           },
+                           new FontSetting()
+                           {
+                               Level = (float)2.0,
+                               MinSize = (float)18.0,
+                               MaxSize = (float)24.0,
+                               Bold = false,
+                               Italic = false
+                           },
+                           new FontSetting()
+                           {
+                               Level = (float)2.0,
+                               MinSize = (float)18.0,
+                               MaxSize = (float)24.0,
+                               Bold = true
+                           },
+                           new FontSetting()
+                           {
+                               Level = (float)3.0,
+                               MinSize = (float)13.0,
+                               MaxSize = (float)18.0,
+                               Bold = false,
+                               Italic = false
+                           },
+                           new FontSetting()
+                           {
+                               Level = (float)3.0,
+                               MinSize = (float)13.0,
+                               MaxSize = (float)18.0,
+                               Bold = true
+                           },
+                           new FontSetting()
+                           {
+                               Level = (float)4.0,
+                               MinSize = (float)11.0,
+                               MaxSize = (float)13.0,
+                               Bold = false,
+                               Italic = false
+                           }
+                        }
+                    }
+                },
+                Word = new WordSettings()
+                {
+                    Heading = new WordHeadingDetection()
+                    {
+                        Fonts = new List<FontSetting>()
+                        {
+                           new FontSetting()
+                           {
+                               Level = (float)1.0,
+                               MinSize = (float)24.0,
+                               Bold = false,
+                               Italic = false
+                           },
+                           new FontSetting()
+                           {
+                               Level = (float)2.0,
+                               MinSize = (float)18.0,
+                               MaxSize = (float)23.0,
+                               Bold = true,
+                               Italic = false
+                           },
+                            new FontSetting()
+                           {
+                               Level = (float)3.0,
+                               MinSize = (float)14.0,
+                               MaxSize = (float)17.0,
+                               Bold = false,
+                               Italic = false
+                           },
+                             new FontSetting()
+                           {
+                               Level = (float)4.0,
+                               MinSize = (float)13.0,
+                               MaxSize = (float)13.0,
+                               Bold = true,
+                               Italic = false
+                           }
+                        },
+                        Styles = new List<WordStyle>()
+                        {
+                            new WordStyle()
+                            {
+                                Level = (float)1.0,
+                                Names = new List<string>()
+                                {
+                                    "pullout heading","pulloutheading","header"
+                                }
+                            },
+                            new WordStyle()
+                            {
+                                Level = (float)2.0,
+                                Names = new List<string>()
+                                {
+                                    "subtitle"
+                                }
+                            }
+                        }
+                    }
+                },
+                Html = new HtmlSettings()
+                {
+                    ExcludeTagsCompletely = new List<string>()
+                    {
+                        "script","sup"
+                    },
+                    ExcludeTagsKeepContent = new List<string>()
+                    {
+                        "font","em","span"
+                    },
+                    KeepContent = new XPathPatterns()
+                    {
+                        Xpaths = new List<string>()
+                    },
+                    ExcludeContent = new XPathPatterns()
+                    {
+                        Xpaths = new List<string>()
+                    },
+                    ExcludeTagAttributes = new List<string>()
+                    {
+                        "EVENT_ACTIONS"
+                    }
+                },
+                JsonNormalizations = new List<NormalizationOperation>()
+            };
+
+            Enrichment2 _enrichment = new Enrichment2()
             {
                 DestinationField = "enriched_text",
                 SourceField = "text",
                 EnrichmentName = "natural_language_understanding",
-                Options = new EnrichmentOptions()
+                Options = new EnrichmentOptions2()
             };
 
-            EnrichmentOptions _options = new EnrichmentOptions()
+            Features _features = new Features()
             {
-                Extract = "entity,keyword,doc-sentiment,concept,taxonomy,relation,doc-emotion",
-                Sentiment = true,
-                Quotations = true,
-                Model = modelid
+                Entities = new EntitiesOptions()
+                {
+                    Sentiment = true,
+                    Emotion = true,
+                    Limit = 20,
+                    Model = modelid
+                },
+                Sentiment = new SentimentOptions()
+                {
+                    Document = true
+                },
+                Categories = new CategoriesOptions(),
+                Concepts = new ConceptsOptions()
+                {
+                    Limit = 8
+                },
+
+                Relations = new RelationsOptions()
+                {
+                    Model = modelid
+                },
+             
+                Emotion = new EmotionOptions()
+                {
+                    Document = true
+                },
+                Keywords = new KeywordsOptions()
+                {
+                    Limit = 20,
+                    Sentiment = true,
+                    Emotion = true
+                },
+                SemanticRoles = new SemanticRolesOptions()
+                {
+                    Limit = 8,
+                    Entities = true,
+                    Keywords = true
+                }
             };
 
-            //_enrichment.Options = _options;
 
-            Configuration config = _discovery.GetConfiguration(_createdEnvironmentId, configid);
+            if (!string.IsNullOrEmpty(modelid))
+            {
+                _enrichment.Options.Features = _features;
+            }
+            else
+            {
+                _enrichment.Options = new EnrichmentOptions2();
+            }
+
+          
+
+            Configuration2 config = _discovery.GetConfiguration(_createdEnvironmentId, configid);
 
             config.Enrichments[0] = _enrichment;
             config.Conversions = _conversions;
 
-          
+
             var result = _discovery.UpdateConfiguration(_createdEnvironmentId, configid, config);
 
             if (result != null)
@@ -370,7 +600,7 @@ namespace NLUtest.Controllers
         [HttpPost]
         public IActionResult DeleteConfiguration(string configid)
         {
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2016_12_01);
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
             var result = _discovery.DeleteConfiguration(_createdEnvironmentId, configid);
 
@@ -408,7 +638,7 @@ namespace NLUtest.Controllers
         [HttpPost]
         public IActionResult CreateCollection(string name, string configid)
         {
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2016_12_01);
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
             CreateCollectionRequest createCollectionRequest = new CreateCollectionRequest()
             {
@@ -433,7 +663,7 @@ namespace NLUtest.Controllers
         [HttpPost]
         public IActionResult GetCollection(string collectionid)
         {
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2016_12_01);
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
             var result = _discovery.GetCollection(_createdEnvironmentId, collectionid);
 
@@ -457,7 +687,7 @@ namespace NLUtest.Controllers
             if (string.IsNullOrEmpty(_createdEnvironmentId))
                 throw new ArgumentNullException("_createdEnvironmentId es nulo");
 
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2016_12_01);
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
             var result = _discovery.DeleteCollection(_createdEnvironmentId, collectionid);
 
@@ -485,7 +715,7 @@ namespace NLUtest.Controllers
         public IActionResult AddDocument(string collectionid, string configid)
         {
 
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2016_12_01);
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
 
             using (FileStream fs = System.IO.File.OpenRead(_filepathToIngest))
@@ -511,7 +741,7 @@ namespace NLUtest.Controllers
         public IActionResult GetConfiguration(string configid)
         {
 
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2016_12_01);
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
             var result = _discovery.GetConfiguration(_createdEnvironmentId, configid);
 
