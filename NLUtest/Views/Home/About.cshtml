@@ -1,18 +1,52 @@
 ﻿@model IBM.WatsonDeveloperCloud.Discovery.v1.Model.ListEnvironmentsResponse
 
+@section Styles{
+    <link href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css" rel="stylesheet" />
+}
+
 @{
     ViewData["Title"] = "Prueba Watson Discovery Service";
 }
+
 <h2>@ViewData["Title"]</h2>
 
-<h3>Listado de Entornos</h3>
+<h3 class="alert alert-info">Listado de Entornos</h3>
 
-<p>@ViewData["Enviroments"]</p>
+@*<p>@ViewData["Enviroments"]</p>*@
 
-<h3>Configuraciones</h3>
 
-<p>@ViewData["Configurations"]</p>
+<table id="tblEnviroment" class="display" cellspacing="0">
+    <thead>
+        <tr>
+            <th>environment_id</th>
+            <th>name</th>
+            @*<th>description</th>
+                <th>created</th>
+                <th>updated</th>*@
+            <th>read_only</th>
+        </tr>
+    </thead>
 
+</table>
+
+
+<h3 class="alert alert-info">Configuraciones</h3>
+
+@*<p>@ViewData["Configurations"]</p>*@
+
+
+<table id="tblConfigurations" class="display" cellspacing="0">
+    <thead>
+        <tr>
+            <th>configuration_id</th>
+            <th>name</th>
+            @*<th>description</th>
+                <th>created</th>
+                <th>updated</th>*@
+        </tr>
+    </thead>
+
+</table>
 
 <div id="divCreateConfig">
     <label>Nombre Configuración</label>
@@ -40,9 +74,33 @@
 </div>
 
 
-<h3>Colecciones</h3>
+<h3 class="alert alert-info">Colecciones</h3>
 
-<p>@ViewData["Collections"]</p>
+@*<p>@ViewData["Collections"]</p>*@
+
+<table id="tblCollections" class="display" cellspacing="0" style="margin:0;">
+    <thead>
+        <tr>
+            <th>configuration_id</th>
+            <th>name</th>
+            @*<th>description</th>
+                <th>created</th>
+                <th>updated</th>*@
+            <th>configuration_id</th>
+            <th>language</th>
+        </tr>
+    </thead>
+
+</table>
+
+<div id="divCollections">
+    <label>Nombre Colección</label>
+    <input type="text" id="queryCreateCollectionName" placeholder="Ingrese nombre de colección" />
+    <input type="text" id="queryCreateCollectionConfig" placeholder="Ingrese ID de configuración" />
+    <button id="btnCreateCollection" class="btn btn-warning">Crear</button>
+
+    <p id="pCreateCollection"></p>
+</div>
 
 <div id="divCollections">
     <label>ID Collection</label>
@@ -53,22 +111,122 @@
     <p id="pCollectionID"></p>
 </div>
 
-<button id="btnSave" type="submit" class="btn btn-primary">Agregar Documento</button>
+
+<div id="divDocuments">
+    <h3 class="alert alert-info">Documentos</h3>
+
+    <p>@ViewData["Documents"]</p>
 
 
-<div id="createdDoc" style="margin-top:1rem;margin-bottom:1rem;"></div>
+    <label>ID Documento</label>
+    <input type="text" id="queryDocumentID" placeholder="Seleccione su colección" />
+    <button id="btnEliminarDocumentID" class="btn btn-danger">Eliminar</button>
+
+    <button id="btnSave" type="submit" class="btn btn-primary">Agregar Documento</button>
 
 
+    <div id="createdDoc" style="margin-top:1rem;margin-bottom:1rem;"></div>
+</div>
 
 
-<label>¿Qué le provoca hoy?</label>
-<input type="text" name="queryInput" placeholder="Escriba su consulta..." />
-<button id="btnQuery" class="btn btn-success">Consultar</button>
+<div>
+    <h3 class="alert alert-info">Consultas</h3>
+
+    <label>¿Qué le provoca hoy?</label>
+    <input type="text" name="queryInput" placeholder="Escriba su consulta..." />
+    <button id="btnQuery" class="btn btn-success">Consultar</button>
+
+</div>
+
 
 @section Scripts {
+
+    <script src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+
     <script type="text/javascript">
+        $.extend(true, $.fn.dataTable.defaults, {
+            lengthChange: false,
+            searching: false,
+            language: {
+                lengthMenu: "Mostrar _MENU_ registros por página.",
+                zeroRecords: "Lo sentimos. No se encontraron registros.",
+                info: "Mostrando página _PAGE_ de _PAGES_",
+                infoEmpty: "No hay registros aún.",
+                infoFiltered: "(filtrados de un total de _MAX_ registros)",
+                search: "Búsqueda",
+                LoadingRecords: "Cargando ...",
+                Processing: "Procesando...",
+                SearchPlaceholder: "Comience a teclear...",
+                paginate: {
+                    previous: "Anterior",
+                    next: "Siguiente"
+                }
+            }
+        });
 
         $(function () {
+
+
+            $.ajax({
+                url: '@Url.Action("GetEnvironments", "Home")',
+                method: 'POST',
+                dataType: 'json'
+            })
+            .done(function (result) {
+
+                $('#tblEnviroment').DataTable({           
+                    data: result.environments,
+                    columns: [
+                        { data: "environment_id" },
+                        { data: "name" },
+                        //{ data: "description" },
+                        //{ data: "created" },
+                        //{ data: "updated" },
+                        { data: "read_only" }
+                    ]
+                });
+            });
+
+            $.ajax({
+                url: '@Url.Action("GetConfigurations", "Home")',
+                method: 'POST',
+                dataType: 'json'
+            })
+            .done(function (result) {
+
+                $('#tblConfigurations').DataTable({
+                    data: result.configurations,
+                    columns: [
+                        { data: "configuration_id" },
+                        { data: "name" }
+                        //{ data: "description" },
+                        //{ data: "created" },
+                        //{ data: "updated" }
+                    ]
+                });
+            });
+
+             $.ajax({
+                url: '@Url.Action("GetCollections", "Home")',
+                method: 'POST',
+                dataType: 'json'
+            })
+            .done(function (result) {
+
+                $('#tblCollections').DataTable({
+                    data: result.collections,
+                    columns: [
+                        { data: "collection_id" },
+                        { data: "name" },
+                        //{ data: "description" },
+                        //{ data: "created" },
+                        //{ data: "updated" },
+                        { data: "configuration_id" },
+                        { data: "language" }
+                    ]
+                });
+            });
+
             $('#btnSave').click(function () {
 
                 var _configid = $("#queryConfigID").val();
@@ -243,6 +401,38 @@
             });
 
 
+             $('#btnCreateCollection').click(function () {
+
+                 var _collectionname = $("#queryCreateCollectionName").val();
+                 var _configid = $("#queryCreateCollectionConfig").val();
+
+                 if (_collectionname == null || _collectionname == undefined) {
+                    alert("Debe ingresar un Nombre de Colección");
+                    return;
+                 }
+
+                 if (_configid == null || _configid == undefined) {
+                     alert("Debe ingresar un ID de Configuración");
+                     return;
+                 }
+
+                var request = $.ajax({
+                        url: '@Url.Action("CreateCollection", "Home")',
+                        method: 'POST',
+                        data: { name: _collectionname, configid: _configid }
+                });
+
+                request.done(function (obj) {
+                    alert("Se creó la Colección: " + obj);
+
+                    });
+
+                    request.fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
+            });
+
+
             $('#btnEliminarCollectionID').click(function () {
 
                 var _collectionid = $("#queryCollectionID").val();
@@ -260,6 +450,38 @@
 
                 request.done(function (obj) {
                     alert("Se eliminó la Colección: " + obj);
+
+                    });
+
+                    request.fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
+             });
+
+
+            $('#btnEliminarDocumentID').click(function () {
+
+                var _documentid = $("#queryDocumentID").val();
+                var _collectionid = $("#queryCollectionID").val();
+
+                if (_collectionid == null || _collectionid == undefined) {
+                    alert("Debe ingresar un ID de Colección");
+                    return;
+                }
+
+                if (_documentid == null || _documentid == undefined) {
+                    alert("Debe ingresar un ID de Documento");
+                    return;
+                }
+
+                var request = $.ajax({
+                        url: '@Url.Action("DeleteDocument", "Home")',
+                        method: 'POST',
+                        data: { collectionid: _collectionid, documentid: _documentid }
+                });
+
+                request.done(function (obj) {
+                    alert("Se eliminó el Documento: " + obj);
 
                     });
 

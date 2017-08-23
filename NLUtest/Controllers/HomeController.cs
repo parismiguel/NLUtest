@@ -24,6 +24,8 @@ namespace NLUtest.Controllers
         string userNLU = "41e3eac1-88e0-4ed9-aca2-b7c2d74bdcc1";
         string pswNLU = "442L2dJkoqAO";
 
+        string modelNLU = "";
+
 
         #region Discovery Parameters
         public string _username = "20312444-1393-49f5-9bce-ab73bfc08c19";
@@ -91,30 +93,32 @@ namespace NLUtest.Controllers
         {
             _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
-            ViewData["Enviroments"] = GetEnvironments();
-            ViewData["Configurations"] = GetConfigurations();
-            ViewData["Collections"] = GetCollections();
+            //ViewData["Enviroments"] = JsonConvert.SerializeObject(GetEnvironments(), Formatting.Indented);
+            //ViewData["Configurations"] = GetConfigurations();
+            //ViewData["Collections"] = GetCollections();
+            ViewData["Documents"] = GetDocuments();
 
             return View();
         }
 
 
-
-        public string GetEnvironments()
+        [HttpPost]
+        public IActionResult GetEnvironments()
         {
-            Console.WriteLine(string.Format("\nCalling GetEnvironments()..."));
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
             var result = _discovery.ListEnvironments();
 
             if (result != null)
             {
-                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
 
-                return model;
+                return Json(result);
+
             }
             else
             {
-                return "Resultado nulo";
+                return Json("Resultado nulo");
             }
         }
 
@@ -351,20 +355,21 @@ namespace NLUtest.Controllers
             }
         }
 
-        private string GetConfigurations()
+        [HttpPost]
+        public IActionResult GetConfigurations()
         {
-            Console.WriteLine(string.Format("\nCalling GetConfigurations()..."));
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
             var result = _discovery.ListConfigurations(_createdEnvironmentId);
 
             if (result != null)
             {
-                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
-                return model;
+                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return Json(result);
             }
             else
             {
-                return "Resultado nulo";
+                return Json("Resultado nulo");
             }
         }
 
@@ -529,7 +534,7 @@ namespace NLUtest.Controllers
                 {
                     Sentiment = true,
                     Emotion = true,
-                    Limit = 20,
+                    Limit = 50,
                     Model = modelid
                 },
                 Sentiment = new SentimentOptions()
@@ -539,7 +544,7 @@ namespace NLUtest.Controllers
                 Categories = new CategoriesOptions(),
                 Concepts = new ConceptsOptions()
                 {
-                    Limit = 8
+                    Limit = 10
                 },
 
                 Relations = new RelationsOptions()
@@ -553,13 +558,13 @@ namespace NLUtest.Controllers
                 },
                 Keywords = new KeywordsOptions()
                 {
-                    Limit = 20,
+                    Limit = 30,
                     Sentiment = true,
                     Emotion = true
                 },
                 SemanticRoles = new SemanticRolesOptions()
                 {
-                    Limit = 8,
+                    Limit = 10,
                     Entities = true,
                     Keywords = true
                 }
@@ -615,10 +620,31 @@ namespace NLUtest.Controllers
             }
         }
 
-        private string GetCollections()
+        [HttpPost]
+        public IActionResult GetCollections()
         {
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
             var result = _discovery.ListCollections(_createdEnvironmentId);
+
+            if (result != null)
+            {
+                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return Json(result);
+            }
+            else
+            {
+                return Json("Resultado nulo");
+            }
+        }
+
+        private string GetDocuments()
+        {
+            var collectionid = "9fe7fde3-3ffa-4773-856f-f88e2a8695e6";
+            var query = "return=extracted_metadata&version=2017-08-01";
+            //var query = "return=extracted_metadata";
+
+            var result = _discovery.Query(_createdEnvironmentId, collectionid,null,query);
 
             if (result != null)
             {
@@ -630,7 +656,6 @@ namespace NLUtest.Controllers
                 return "Resultado nulo";
             }
         }
-
 
 
 
@@ -703,14 +728,7 @@ namespace NLUtest.Controllers
         }
 
 
-
-
-
-
-
-
-
-
+        
         [HttpGet]
         public IActionResult AddDocument(string collectionid, string configid)
         {
@@ -738,6 +756,25 @@ namespace NLUtest.Controllers
 
 
         [HttpPost]
+        public IActionResult DeleteDocument(string collectionid, string documentid)
+        {
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
+
+            var result = _discovery.DeleteDocument(_createdEnvironmentId, collectionid, documentid);
+
+            if (result != null)
+            {
+                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return Json(model);
+            }
+            else
+            {
+                return Json("Resultado nulo");
+            }
+        }
+
+
+        [HttpPost]
         public IActionResult GetConfiguration(string configid)
         {
 
@@ -756,6 +793,26 @@ namespace NLUtest.Controllers
             }
 
         }
+
+
+
+        #region Query
+        [HttpPost]
+        public IActionResult Query(string collectionid, string query)
+        {
+            var result = _discovery.Query(_createdEnvironmentId, collectionid, null, null, query, true);
+
+            if (result != null)
+            {
+                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return Json(model);
+            }
+            else
+            {
+                return Json("Resultado nulo");
+            }
+        }
+        #endregion
 
         public IActionResult Contact()
         {

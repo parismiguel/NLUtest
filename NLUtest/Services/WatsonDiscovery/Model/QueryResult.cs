@@ -43,6 +43,9 @@ namespace IBM.WatsonDeveloperCloud.Discovery.v1.Model
         /// <value>Metadata of the document.</value>
         [JsonProperty("metadata", NullValueHandling = NullValueHandling.Ignore)]
         public object Metadata { get; set; }
+
+        [JsonProperty("extracted_metadata", NullValueHandling = NullValueHandling.Ignore)]
+        public object Extracted_Metadata { get; set; }
     }
 
 }
