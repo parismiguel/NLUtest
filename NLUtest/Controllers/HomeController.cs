@@ -694,8 +694,8 @@ namespace NLUtest.Controllers
 
             if (result != null)
             {
-                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
-                return Json(model);
+                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return Json(result);
             }
             else
             {
@@ -784,8 +784,8 @@ namespace NLUtest.Controllers
 
             if (result != null)
             {
-                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
-                return Json(model);
+                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return Json(result);
             }
             else
             {

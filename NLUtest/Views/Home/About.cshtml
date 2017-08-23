@@ -119,7 +119,7 @@
     <table id="tblCollections" class="display" cellspacing="0" style="margin:0;">
         <thead>
             <tr>
-                <th>configuration_id</th>
+                <th>collection_id</th>
                 <th>name</th>
                 @*<th>description</th>
                     <th>created</th>
@@ -204,6 +204,7 @@
 @section Scripts {
 
     <script src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+    <script src="~/js/renderjson.js"></script>
 
     <script type="text/javascript">
         $.extend(true, $.fn.dataTable.defaults, {
@@ -366,7 +367,10 @@
 
                 request.done(function (obj) {
                     $("#pConfigID").addClass("alert alert-warning");
-                    $("#pConfigID").text(obj);
+
+                    $("#pConfigID").html(renderjson.set_show_to_level(2)(obj));
+
+                    //$("#pConfigID").text(obj);
                     $("#divModelUpdate").show();
 
                     });
@@ -453,7 +457,9 @@
 
                 request.done(function (obj) {
                     $("#pCollectionID").addClass("alert alert-warning");
-                    $("#pCollectionID").text(obj);
+
+                    $("#pCollectionID").html(renderjson.set_show_to_level(2)(obj));
+                    //$("#pCollectionID").text(obj);
 
                     });
 
