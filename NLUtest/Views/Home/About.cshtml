@@ -2,139 +2,201 @@
 
 @section Styles{
     <link href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css" rel="stylesheet" />
+
+    <style type="text/css">
+        div.card {
+            border-style: solid;
+            margin: 2rem 0;
+            border-color: lightgray;
+            padding: 1rem;
+        }
+
+        a.btn-block {
+            text-align: left;
+            font-size: x-large;
+            margin: 1rem 0;
+        }
+    </style>
 }
 
 @{
-    ViewData["Title"] = "Prueba Watson Discovery Service";
+    ViewData["Title"] = "Watson Discovery Service";
 }
 
 <h2>@ViewData["Title"]</h2>
 
-<h3 class="alert alert-info">Listado de Entornos</h3>
 
-@*<p>@ViewData["Enviroments"]</p>*@
-
-
-<table id="tblEnviroment" class="display" cellspacing="0">
-    <thead>
-        <tr>
-            <th>environment_id</th>
-            <th>name</th>
-            @*<th>description</th>
-                <th>created</th>
-                <th>updated</th>*@
-            <th>read_only</th>
-        </tr>
-    </thead>
-
-</table>
+<a class="btn btn-primary btn-block" data-toggle="collapse" href="#divEnvironment" aria-expanded="true" aria-controls="divEnvironment">
+    Listado de Entornos
+</a>
 
 
-<h3 class="alert alert-info">Configuraciones</h3>
+<div id="divEnvironment" class="collapse in" aria-expanded="true">
+    <table id="tblEnviroment" class="display" cellspacing="0" style="margin:0;">
+        <thead>
+            <tr>
+                <th>environment_id</th>
+                <th>name</th>
+                @*<th>description</th>
+                    <th>created</th>
+                    <th>updated</th>*@
+                <th>read_only</th>
+            </tr>
+        </thead>
 
-@*<p>@ViewData["Configurations"]</p>*@
-
-
-<table id="tblConfigurations" class="display" cellspacing="0">
-    <thead>
-        <tr>
-            <th>configuration_id</th>
-            <th>name</th>
-            @*<th>description</th>
-                <th>created</th>
-                <th>updated</th>*@
-        </tr>
-    </thead>
-
-</table>
-
-<div id="divCreateConfig">
-    <label>Nombre Configuración</label>
-    <input type="text" id="queryCreateConfig" placeholder="Ingrese nombre de configuración" />
-    <input type="text" id="queryCreateModel" placeholder="Ingrese ID de modelo" />
-    <button id="btnCreateConfig" class="btn btn-warning">Crear</button>
-
-    <p id="pCreateConfig"></p>
-</div>
-
-<label>ID Configuración</label>
-<input type="text" id="queryConfigID" placeholder="Seleccione su configuración" />
-<button id="btnConfigID" class="btn btn-success">Consultar</button>
-<button id="btnEliminarConfig" class="btn btn-danger">Eliminar</button>
-
-<p id="pConfigID"></p>
-
-
-<div id="divModelUpdate" hidden>
-    <label>ID Model</label>
-    <input type="text" id="queryModelID" placeholder="Seleccione su modelo" />
-    <button id="btnModelID" class="btn btn-success">Actualizar</button>
-
-    <p id="pModelID"></p>
+    </table>
 </div>
 
 
-<h3 class="alert alert-info">Colecciones</h3>
+    <a class="btn btn-primary btn-block" data-toggle="collapse" href="#divConfig" aria-expanded="true" aria-controls="divConfig">
+        Configuraciones
+    </a>
 
-@*<p>@ViewData["Collections"]</p>*@
 
-<table id="tblCollections" class="display" cellspacing="0" style="margin:0;">
-    <thead>
-        <tr>
-            <th>configuration_id</th>
-            <th>name</th>
-            @*<th>description</th>
-                <th>created</th>
-                <th>updated</th>*@
-            <th>configuration_id</th>
-            <th>language</th>
-        </tr>
-    </thead>
+<div id="divConfig" class="collapse">
 
-</table>
+    <table id="tblConfigurations" class="display" cellspacing="0" style="margin:0;">
+        <thead>
+            <tr>
+                <th>configuration_id</th>
+                <th>name</th>
+                @*<th>description</th>
+                    <th>created</th>
+                    <th>updated</th>*@
+            </tr>
+        </thead>
 
-<div id="divCollections">
-    <label>Nombre Colección</label>
-    <input type="text" id="queryCreateCollectionName" placeholder="Ingrese nombre de colección" />
-    <input type="text" id="queryCreateCollectionConfig" placeholder="Ingrese ID de configuración" />
-    <button id="btnCreateCollection" class="btn btn-warning">Crear</button>
+    </table>
 
-    <p id="pCreateCollection"></p>
+    <div class="card">
+        <div class="form-group">
+            <label for="queryCreateConfig">Nombre Configuración</label>
+            <input class="form-control" type="text" id="queryCreateConfig" placeholder="Ingrese nombre de configuración" />
+        </div>
+
+        <div class="form-group">
+            <label for="queryCreateModel">Model ID</label>
+            <input class="form-control" type="text" id="queryCreateModel" placeholder="Ingrese ID de modelo" />
+        </div>
+
+        <button id="btnCreateConfig" class="btn btn-warning">Crear</button>
+
+        <p id="pCreateConfig"></p>
+
+    </div>
+    <div class="card">
+        <div class="form-group">
+            <label for="queryConfigID">ID Configuración</label>
+            <input class="form-control" type="text" id="queryConfigID" placeholder="Seleccione su configuración" />
+        </div>
+
+        <button id="btnConfigID" class="btn btn-success">Consultar</button>
+        <button id="btnEliminarConfig" class="btn btn-danger">Eliminar</button>
+
+        <p id="pConfigID"></p>
+    </div>
+
+
+    <div class="card" id="divModelUpdate" hidden>
+        <div class="form-group">
+            <label for="queryModelID">ID Model</label>
+            <input class="form-control" type="text" id="queryModelID" placeholder="Seleccione su modelo" />
+        </div>
+
+        <button id="btnModelID" class="btn btn-success">Actualizar</button>
+
+        <p id="pModelID"></p>
+    </div>
 </div>
 
-<div id="divCollections">
-    <label>ID Collection</label>
-    <input type="text" id="queryCollectionID" placeholder="Seleccione su colección" />
-    <button id="btnCollectionID" class="btn btn-success">Consultar</button>
-    <button id="btnEliminarCollectionID" class="btn btn-danger">Eliminar</button>
 
-    <p id="pCollectionID"></p>
+
+    <a class="btn btn-primary btn-block" data-toggle="collapse" href="#divCollections" aria-expanded="true" aria-controls="divCollections">
+        Colecciones
+    </a>
+
+<div id="divCollections" class="collapse">
+    <table id="tblCollections" class="display" cellspacing="0" style="margin:0;">
+        <thead>
+            <tr>
+                <th>configuration_id</th>
+                <th>name</th>
+                @*<th>description</th>
+                    <th>created</th>
+                    <th>updated</th>*@
+                <th>configuration_id</th>
+                <th>language</th>
+            </tr>
+        </thead>
+
+    </table>
+
+
+    <div class="card">
+        <div class="form-group">
+            <label for="queryCreateCollectionName">Nombre Colección</label>
+            <input class="form-control" type="text" id="queryCreateCollectionName" placeholder="Ingrese nombre de colección" />
+        </div>
+        <div class="form-group">
+            <label for="queryCreateCollectionConfig">Configuración ID</label>
+            <input class="form-control" type="text" id="queryCreateCollectionConfig" placeholder="Ingrese ID de configuración" />
+        </div>
+
+        <button id="btnCreateCollection" class="btn btn-warning">Crear</button>
+
+        <p id="pCreateCollection"></p>
+    </div>
+
+    <div class="card">
+        <div class="form-group">
+            <label for="queryCollectionID">ID Collection</label>
+            <input class="form-control" type="text" id="queryCollectionID" placeholder="Seleccione su colección" />
+        </div>
+
+        <button id="btnCollectionID" class="btn btn-success">Consultar</button>
+        <button id="btnEliminarCollectionID" class="btn btn-danger">Eliminar</button>
+
+        <p id="pCollectionID"></p>
+    </div>
 </div>
 
 
-<div id="divDocuments">
-    <h3 class="alert alert-info">Documentos</h3>
 
+
+    <a class="btn btn-primary btn-block" data-toggle="collapse" href="#divDocuments" aria-expanded="true" aria-controls="divDocuments">
+        Documentos
+    </a>
+
+<div id="divDocuments" class="collapse">
     <p>@ViewData["Documents"]</p>
 
+    <div class="card">
+        <div class="form-group">
+            <label for="queryDocumentID">ID Documento</label>
+            <input class="form-control" type="text" id="queryDocumentID" placeholder="Seleccione su colección" />
+        </div>
 
-    <label>ID Documento</label>
-    <input type="text" id="queryDocumentID" placeholder="Seleccione su colección" />
-    <button id="btnEliminarDocumentID" class="btn btn-danger">Eliminar</button>
+        <button id="btnEliminarDocumentID" class="btn btn-danger">Eliminar</button>
+        <button id="btnSave" type="submit" class="btn btn-primary">Agregar Documento</button>
 
-    <button id="btnSave" type="submit" class="btn btn-primary">Agregar Documento</button>
-
-
-    <div id="createdDoc" style="margin-top:1rem;margin-bottom:1rem;"></div>
+        <div id="createdDoc" style="margin-top:1rem;margin-bottom:1rem;"></div>
+    </div>
 </div>
 
+<a class="btn btn-primary btn-block" data-toggle="collapse" href="#divQuery" aria-expanded="true" aria-controls="divQuery">
+    Consultas
+</a>
 
-<div>
-    <h3 class="alert alert-info">Consultas</h3>
 
-    <label>¿Qué le provoca hoy?</label>
-    <input type="text" name="queryInput" placeholder="Escriba su consulta..." />
-    <button id="btnQuery" class="btn btn-success">Consultar</button>
+<div id="divQuery" class="collapse">
+    <div class="card">
+        <div class="form-group">
+            <label for="queryInput">¿Qué le provoca hoy?</label>
+            <input class="form-control" type="text" name="queryInput" placeholder="Escriba su consulta..." />
+        </div>
+
+        <button id="btnQuery" class="btn btn-success">Consultar</button>
+    </div>
 
 </div>
 
@@ -174,7 +236,7 @@
             })
             .done(function (result) {
 
-                $('#tblEnviroment').DataTable({           
+                $('#tblEnviroment').DataTable({
                     data: result.environments,
                     columns: [
                         { data: "environment_id" },
@@ -266,7 +328,7 @@
                 var _configname = $("#queryCreateConfig").val();
                 var _modelid = $("#queryCreateModel").val();
 
-                if (_configname == null || _configname == undefined) {
+                if (_configname == null || _configname == undefined || _configname == "") {
                     alert("Debe ingresar un Nombre Configuración");
                     return;
                 }
@@ -291,7 +353,7 @@
 
                 var _configid = $("#queryConfigID").val();
 
-                if (_configid == null || _configid == undefined) {
+                if (_configid == null || _configid == undefined || _configid == "") {
                     alert("Debe ingresar un ID de Configuración");
                     return;
                 }
@@ -319,7 +381,7 @@
 
                 var _configid = $("#queryConfigID").val();
 
-                if (_configid == null || _configid == undefined) {
+                if (_configid == null || _configid == undefined || _configid == "") {
                     alert("Debe ingresar un ID de Configuración");
                     return;
                 }
@@ -346,12 +408,12 @@
                 var _configid = $("#queryConfigID").val();
                 var _modelid = $("#queryModelID").val();
 
-                if (_configid == null || _configid == undefined) {
+                if (_configid == null || _configid == undefined || _configid == "") {
                     alert("Debe ingresar un ID de Configuración");
                     return;
                 }
 
-                if (_modelid == null || _modelid == undefined) {
+                if (_modelid == null || _modelid == undefined || _modelid == "") {
                     alert("Debe ingresar un ID de Modelo");
                     return;
                 }
@@ -378,7 +440,7 @@
 
                 var _collectionid = $("#queryCollectionID").val();
 
-                if (_collectionid == null || _collectionid == undefined) {
+                if (_collectionid == null || _collectionid == undefined || _collectionid == "") {
                     alert("Debe ingresar un ID de Colección");
                     return;
                 }
@@ -406,12 +468,12 @@
                  var _collectionname = $("#queryCreateCollectionName").val();
                  var _configid = $("#queryCreateCollectionConfig").val();
 
-                 if (_collectionname == null || _collectionname == undefined) {
+                 if (_collectionname == null || _collectionname == undefined || _collectionname == "") {
                     alert("Debe ingresar un Nombre de Colección");
                     return;
                  }
 
-                 if (_configid == null || _configid == undefined) {
+                 if (_configid == null || _configid == undefined || _configid == "") {
                      alert("Debe ingresar un ID de Configuración");
                      return;
                  }
@@ -437,7 +499,7 @@
 
                 var _collectionid = $("#queryCollectionID").val();
 
-                if (_collectionid == null || _collectionid == undefined) {
+                if (_collectionid == null || _collectionid == undefined || _collectionid == "") {
                     alert("Debe ingresar un ID de Colección");
                     return;
                 }
@@ -464,12 +526,12 @@
                 var _documentid = $("#queryDocumentID").val();
                 var _collectionid = $("#queryCollectionID").val();
 
-                if (_collectionid == null || _collectionid == undefined) {
+                if (_collectionid == null || _collectionid == undefined || _collectionid == "") {
                     alert("Debe ingresar un ID de Colección");
                     return;
                 }
 
-                if (_documentid == null || _documentid == undefined) {
+                if (_documentid == null || _documentid == undefined || _documentid == "") {
                     alert("Debe ingresar un ID de Documento");
                     return;
                 }
