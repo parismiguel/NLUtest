@@ -13,18 +13,27 @@ using IBM.WatsonDeveloperCloud.Discovery.v1;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System.IO;
+using IBM.WatsonDeveloperCloud.VisualRecognition.v3;
 
 namespace NLUtest.Controllers
 {
 
     public class HomeController : Controller
     {
+        #region NLU parameters
         private NaturalLanguageUnderstandingService _naturalLanguageUnderstandingService;
 
         string userNLU = "41e3eac1-88e0-4ed9-aca2-b7c2d74bdcc1";
         string pswNLU = "442L2dJkoqAO";
 
         string modelNLU = "";
+        #endregion
+
+        #region Visual Recognition parameters
+        // create a Tone Analyzer Service instance
+        private VisualRecognitionService _visualRecognition = new VisualRecognitionService();
+
+        #endregion
 
 
         #region Discovery Parameters
@@ -551,7 +560,7 @@ namespace NLUtest.Controllers
                 {
                     Model = modelid
                 },
-             
+
                 Emotion = new EmotionOptions()
                 {
                     Document = true
@@ -580,7 +589,7 @@ namespace NLUtest.Controllers
                 _enrichment.Options = new EnrichmentOptions2();
             }
 
-          
+
 
             Configuration2 config = _discovery.GetConfiguration(_createdEnvironmentId, configid);
 
@@ -644,7 +653,7 @@ namespace NLUtest.Controllers
             var query = "return=extracted_metadata&version=2017-08-01";
             //var query = "return=extracted_metadata";
 
-            var result = _discovery.Query(_createdEnvironmentId, collectionid,null,query);
+            var result = _discovery.Query(_createdEnvironmentId, collectionid, null, query);
 
             if (result != null)
             {
@@ -728,7 +737,7 @@ namespace NLUtest.Controllers
         }
 
 
-        
+
         [HttpGet]
         public IActionResult AddDocument(string collectionid, string configid)
         {
@@ -816,7 +825,23 @@ namespace NLUtest.Controllers
 
         public IActionResult Contact()
         {
-            ViewData["Message"] = "Your contact page.";
+            ViewData["Message"] = "Visual Recognition";
+
+            //https://github.com/watson-developer-cloud/dotnet-standard-sdk/tree/development/src/IBM.WatsonDeveloperCloud.VisualRecognition.v3
+
+            // set the credentials
+            _visualRecognition.SetCredential("<apikey>");
+
+
+
+            //  classify using an image url
+            var result = _visualRecognition.Classify("<image-url>");
+
+            //  detect faces using an image url
+            var result2 = _visualRecognition.DetectFaces("<face-url>");
+
+
+
 
             return View();
         }
