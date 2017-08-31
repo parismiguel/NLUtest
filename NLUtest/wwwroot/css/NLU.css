@@ -1,0 +1,200 @@
+﻿.output-section {
+    margin-top: 6rem;
+    max-width: 49rem;
+    padding-bottom: 3rem;
+}
+
+.output-section .tab-panels {
+    background-color: transparent;
+    /* border: none; */
+}
+
+.tab-panels {
+    padding: 0rem;
+    background-color: #f4f4f4;
+    /*border: 1px solid #777677;*/
+}
+
+.tab-panels--tab {
+    display: block;
+    text-decoration: none;
+    padding: .66667rem 1.33333rem;
+    border-bottom: 6px solid transparent;
+}
+
+.tab-panels a {
+    text-decoration: none;
+    font-family: "Helvetica Neue",Helvetica,"Open Sans",Arial,"Lucida Grande",Roboto,sans-serif;
+    line-height: 1.5;
+}
+
+.output-section .tab-panels--tab-list {
+    border-bottom: none;
+}
+
+ul .base--li, ul li {
+    margin-top: 0rem;
+}
+
+.tab-panels--tab-list-item {
+    display: inline-block;
+    margin-top: 0rem;
+}
+
+.base--a, a {
+    color: #121212;
+    border-bottom: 2px solid #121212;
+    font-weight: 400;
+    text-decoration: none;
+    transition: .2s;
+    cursor: pointer;
+}
+
+.output-section .tab-panels--tab.base--a {
+    background-color: transparent;
+    border-radius: 5px;
+    border: 1px solid #969696;
+    color: #5c5b5c;
+    padding: 1rem 2rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 300;
+}
+
+.output-section .tab-panels--tab.active, 
+.output-section .tab-panels--tab:focus, 
+.output-section .tab-panels--tab:hover {
+    color: #fff;
+    background-color: #9855d4;
+    border-color: #9855d4;
+    border-top-color: rgb(152, 85, 212);
+    border-right-color: rgb(152, 85, 212);
+    border-bottom-color: rgb(152, 85, 212);
+    border-left-color: rgb(152, 85, 212);
+}
+
+
+.base--article::after,
+.base--article::before,
+.base--div::after,
+.base--div::before,
+.base--footer::after,
+.base--footer::before,
+.base--header::after,
+.base--header::before,
+article::after,
+article::before,
+div::after,
+div::before,
+footer::after,
+footer::before,
+header::after,
+header::before {
+    content: '';
+    display: table;
+    clear: both;
+}
+
+
+.base--h4 {
+    font-weight: 400;
+    color: #5b5b5b;
+    font-size: 2.25rem;
+    display: block;
+}
+
+.table_gbr7c2 {
+    -webkit-box-direction: normal;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    width: 100%;
+}
+
+.row_5ge9bd {
+    -webkit-box-direction: normal;
+    -webkit-box-orient: horizontal;
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    margin-top: 0rem;
+    max-width: 240px;
+}
+
+.cell_wal1f9-o_O-cell_one_1xxaqvq {
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    width: 50%;
+    margin-top: 0rem;
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    /* padding-right: 1rem; */
+}
+
+.cell_wal1f9-o_O-cell_one_1xxaqvq:first-child {
+    color: #bd8bea;
+    font-weight: 500;
+}
+
+.inner_r99te6-o_O-inner_one_zdxht7 {
+    display: block;
+    width: 100%;
+}
+
+
+.container_vx4ry {
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    width: 100%;
+    max-width: 6rem;
+}
+
+.fullBar_4elwo4 {
+    height: 1rem;
+    border: 1px solid #8a898a;
+    position: relative;
+    width: -webkit-calc(100% - 2rem);
+    width: -moz-calc(100% - 2rem);
+    width: calc(100% - 2rem);
+    margin-right: 0.5rem;
+}
+
+.bar_10gqm3h {
+    background-color: #8a898a;
+    height: 100%;
+    position: absolute;
+    top: 0rem;
+    left: 0rem;
+}
+
+.score_1n73tp1 {
+    width: 1.5rem;
+    text-align: right;
+    margin-top: 0rem;
+    vertical-align: right;
+    font-size: 1rem;
+}
+

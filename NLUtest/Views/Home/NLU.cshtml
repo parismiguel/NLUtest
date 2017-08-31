@@ -1,0 +1,504 @@
+﻿@model IBM.WatsonDeveloperCloud.NaturalLanguageUnderstanding.v1.Model.AnalysisResults
+@using NLUtest.Helpers
+
+@section Styles{
+    <link href="~/css/NLU.css" rel="stylesheet" />
+
+    <style>
+        form {
+            margin: 2rem 0;
+        }
+
+        button {
+            margin: 1rem 1rem 1rem 0;
+        }
+    </style>
+}
+
+@{
+    ViewData["Title"] = "Natural Language Understanding";
+}
+
+
+<h1 style="font-weight:bold;color:chocolate">
+    Natural Language Understanding
+</h1>
+
+<div>
+    <div class="alert alert-info" role="alert">Ingrese su fuente a consultar (Texto o URL)</div>
+
+    <form asp-action="AnalyzeNLU">
+        <textarea asp-for="AnalyzedText" class="form-control" rows="5"></textarea>
+        <button id="btnQuery" type="submit" class="btn btn-success">Analizar</button>
+    </form>
+</div>
+
+
+<div class="output-section">
+    <div class="tab-panels" role="tabpanel">
+        <ul class="tab-panels--tab-list" role="tablist">
+            <li class="tab-panels--tab-list-item base--li" role="presentation">
+                <a href="#sentiment" class=" tab-panels--tab base--a" role="tab">Sentimientos</a>
+            </li>
+            <li class="tab-panels--tab-list-item base--li" role="presentation">
+                <a href="#emotion" class=" tab-panels--tab base--a" role="tab">Emociones</a>
+            </li>
+            <li class="tab-panels--tab-list-item base--li" role="presentation">
+                <a href="#keywords" class="tab-panels--tab base--a" role="tab">Palabras clave</a>
+            </li>
+            <li class="tab-panels--tab-list-item base--li" role="presentation">
+                <a href="#entities" class=" tab-panels--tab base--a" role="tab">Entidades</a>
+            </li>
+            <li class="tab-panels--tab-list-item base--li" role="presentation">
+                <a href="#categories" class=" tab-panels--tab base--a" role="tab">Categorias</a>
+            </li>
+            <li class="tab-panels--tab-list-item base--li" role="presentation">
+                <a href="#concept" class=" tab-panels--tab base--a" role="tab">Conceptos</a>
+            </li>
+            <li class="tab-panels--tab-list-item base--li" role="presentation">
+                <a href="#semantic-roles" class=" tab-panels--tab base--a" role="tab">Roles Semánticos</a>
+            </li>
+        </ul>
+
+        <div class="tab-panels--tab-content">
+
+
+            @if (Model.Sentiment != null)
+            {
+                if (Model.Sentiment.Document != null)
+                {
+                    <div data-id="Sentiment">
+                        <div class="content_1nbo4jo">
+                            <h4 class="base--h4">Sentimiento Promedio</h4>
+                            <div class="table_gbr7c2">
+                                <div class="row_5ge9bd">
+                                    <div data-th="name" class="cell_wal1f9-o_O-cell_one_1xxaqvq">
+                                        <div class="inner_r99te6-o_O-inner_one_zdxht7">@StringHelper.UppercaseFirst(Model.Sentiment.Document.Label)</div>
+                                    </div>
+                                    <div data-th="score" class="cell_wal1f9-o_O-cell_one_1xxaqvq">
+                                        <div class="inner_r99te6-o_O-inner_one_zdxht7">
+                                            <div class="container_vx4ry">
+                                                <div class="fullBar_4elwo4">
+                                                    @{ 
+                                                        var _sentimentScore = Math.Round((decimal)Model.Sentiment.Document.Score * 100, 2);
+                                                    }
+
+                                                    <div class="bar_10gqm3h" style="width: @_sentimentScore%;"></div>
+                                                </div>
+                                                <div class="score_1n73tp1">@Model.Sentiment.Document.Score</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+
+
+        </div>
+    </div>
+</div>
+
+@*<div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="font-size:large;color:red">
+                        Natural Language Understanding
+                    </th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @if (!string.IsNullOrEmpty(Model.Language))
+                {
+                    <tr>
+                        <td style="font-weight:bold;">
+                            @Html.Raw(string.Format("Idioma: {0}", Model.Language))
+                        </td>
+                    </tr>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.AnalyzedText))
+                {
+                    <tr>
+                        <td style="font-weight:bold;">
+                            @Html.Raw(string.Format("Texto analizado: {0}", Model.AnalyzedText))
+                        </td>
+                    </tr>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.RetrievedUrl))
+                {
+                    <tr>
+                        <td style="font-weight:bold;">
+                            @Html.Raw(string.Format("URL recuperado: {0}", Model.RetrievedUrl))
+                        </td>
+                    </tr>
+                }
+
+
+                @if (Model.Usage != null)
+                {
+                    if (Model.Usage.Features != null)
+                    {
+                        <tr>
+                            <td style="font-weight:bold;">
+                                @Html.Raw(string.Format("Caracerísticas de uso: {0}", Model.Usage.Features))
+                            </td>
+                        </tr>
+                    }
+                }
+
+
+                @if (Model.Concepts != null && Model.Concepts.Count > 0)
+                {
+                    foreach (var item in Model.Concepts)
+                    {
+                        <tr>
+                            <td>
+                                @Html.Raw(string.Format("Resultados de Concepto: {0}, Relevancia {1}, Fuente {2}", item.Text, item.Relevance, item.DbpediaResource))
+                            </td>
+                        </tr>
+                    }
+                }
+
+
+                @if (Model.Entities != null && Model.Entities.Count > 0)
+                {
+                    foreach (var entityResult in Model.Entities)
+                    {
+                        <tr>
+                            <td style="font-weight:bold;">
+                                @Html.Raw(string.Format("Tipo de Entidad: {0} | Relevancia: {1} | Total: {2} | Texto: {3}", entityResult.Type, entityResult.Relevance, entityResult.Count, entityResult.Text))
+                            </td>
+                        </tr>
+
+                        if (entityResult.Emotion != null)
+                        {
+                            var emotionScores = entityResult.Emotion;
+
+                            <tr>
+                                <td>
+                                    @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
+                                </td>
+                            </tr>
+
+                        }
+
+                        if (entityResult.Sentiment != null)
+                        {
+                            if (entityResult.Sentiment.Score != null)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.Raw("Puntaje Sentimiento: " + entityResult.Sentiment.Score)
+                                    </td>
+                                </tr>
+                            }
+                        }
+
+                        if (entityResult.Disambiguation != null)
+                        {
+                            var disambiguationResult = entityResult.Disambiguation;
+
+                            <tr>
+                                <td style="font-weight:bold;">
+                                    @Html.Raw(string.Format("Desambiguación de nombre: {0} | dbpediaResource: {1}", disambiguationResult.Name, disambiguationResult.DbpediaResource))
+                                </td>
+                            </tr>
+
+
+                            foreach (string type in disambiguationResult.Subtype)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.Raw("Sub tipo: " + type)
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    }
+                }
+
+                @if (Model.Keywords != null && Model.Keywords.Count > 0)
+                {
+                    foreach (var keywordResult in Model.Keywords)
+                    {
+                        <tr>
+                            <td style="font-weight:bold;">
+                                @Html.Raw(string.Format("Relevancia de palabras clave: {0}, Texto: {1}", keywordResult.Relevance, keywordResult.Text))
+                            </td>
+                        </tr>
+
+                        if (keywordResult.Emotion != null)
+                        {
+                            var emotionScores = keywordResult.Emotion;
+
+                            <tr>
+                                <td>
+                                    @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
+                                </td>
+                            </tr>
+
+                        }
+
+                        if (keywordResult.Sentiment != null)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.Raw("Puntaje Sentimiento: " + keywordResult.Sentiment.Score)
+                                </td>
+                            </tr>
+
+                        }
+                    }
+                }
+
+                @if (Model.Categories != null && Model.Categories.Count > 0)
+                {
+                    foreach (var categoryResult in Model.Categories)
+                    {
+                        <tr>
+                            <td>
+                                @Html.Raw(string.Format("Categoría: {0} | Puntaje: {1}", categoryResult.Label, categoryResult.Score))
+                            </td>
+                        </tr>
+
+                    }
+                }
+
+
+                @if (Model.Emotion != null)
+                {
+                    if (Model.Emotion.Document != null)
+                    {
+                        if (Model.Emotion.Document.Emotion != null)
+                        {
+                            var emotionScores = Model.Emotion.Document.Emotion;
+
+                            <tr>
+                                <td style="font-weight:bold;">
+                                    @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
+                                </td>
+                            </tr>
+                        }
+                    }
+
+                    if (Model.Emotion.Targets != null && Model.Emotion.Targets.Count > 0)
+                    {
+                        foreach (var targetedEmotionResult in Model.Emotion.Targets)
+                        {
+                            <tr>
+                                <td style="font-weight:bold;">
+                                    @Html.Raw(string.Format("Resultado Emoción: {0}", targetedEmotionResult.Text))
+                                </td>
+                            </tr>
+
+                            if (targetedEmotionResult.Emotion != null)
+                            {
+                                var emotionScores = targetedEmotionResult.Emotion;
+
+                                <tr>
+                                    <td>
+                                        @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
+                                    </td>
+                                </tr>
+                            }
+                        }
+
+                    }
+                }
+
+
+                @if (Model.Metadata != null)
+                {
+                    var metadata = Model.Metadata;
+
+                    if (metadata.Authors != null && metadata.Authors.Count > 0)
+                    {
+                        foreach (var author in metadata.Authors)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.Raw("Autor: " + author.Name)
+                                </td>
+                            </tr>
+
+                        }
+                    }
+                }
+
+                @if (Model.Relations != null && Model.Relations.Count > 0)
+                {
+                    foreach (var relationResult in Model.Relations)
+                    {
+                        <tr>
+                            <td style="font-weight:bold;">
+                                @Html.Raw(string.Format("Puntaje Relación: {0} | Oración: {1} | Tipo: {2}", relationResult.Score, relationResult.Sentence, relationResult.Type))
+                            </td>
+                        </tr>
+
+                        if (relationResult.Arguments != null && relationResult.Arguments.Count > 0)
+                        {
+                            foreach (var arg in relationResult.Arguments)
+                            {
+                                <tr>
+                                    <td style="font-weight:bold;">
+                                        @Html.Raw("Texto: " + arg.Text)
+                                    </td>
+                                </tr>
+
+                                if (arg.Entities != null && arg.Entities.Count > 0)
+                                {
+                                    foreach (var entity in arg.Entities)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @Html.Raw(string.Format("Relación de Entidad: {0} | Tipo: {1}", entity.Text, entity.Type))
+                                            </td>
+                                        </tr>
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                @if (Model.SemanticRoles != null && Model.SemanticRoles.Count > 0)
+                {
+                    foreach (var semanticRoleResult in Model.SemanticRoles)
+                    {
+                        <tr>
+                            <td style="font-weight:bold;">
+                                @Html.Raw(string.Format("Rol semántica: {0}", semanticRoleResult.Sentence))
+                            </td>
+                        </tr>
+
+                        if (semanticRoleResult.Subject != null)
+                        {
+                            <tr>
+                                <td style="font-weight:bold;">
+                                    @Html.Raw(string.Format("Sujeto semántica: {0}", semanticRoleResult.Subject.Text))
+                                </td>
+                            </tr>
+
+                            if (semanticRoleResult.Subject.Entities != null && semanticRoleResult.Subject.Entities.Count > 0)
+                            {
+                                foreach (var entity in semanticRoleResult.Subject.Entities)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.Raw(string.Format("Tipo Entidad: {0} | text: {1}", entity.Type, entity.Text))
+                                        </td>
+                                    </tr>
+
+                                }
+                            }
+
+                            if (semanticRoleResult.Subject.Keywords != null && semanticRoleResult.Subject.Keywords.Count > 0)
+                            {
+                                foreach (var keyword in semanticRoleResult.Subject.Keywords)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.Raw(string.Format("Palabra clave: {0}", keyword.Text))
+                                        </td>
+                                    </tr>
+
+                                }
+                            }
+                        }
+
+                        if (semanticRoleResult.Action != null)
+                        {
+                            <tr>
+                                <td style="font-weight:bold;">
+                                    @Html.Raw(string.Format("Acción: {0} | Normalizado: {1}", semanticRoleResult.Action.Text, semanticRoleResult.Action.Normalized))
+                                </td>
+                            </tr>
+
+
+                            if (semanticRoleResult.Action.Verb != null)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.Raw(string.Format("Verbo: {0} | Frase: {1}", semanticRoleResult.Action.Verb.Text, semanticRoleResult.Action.Verb.Tense))
+                                    </td>
+                                </tr>
+
+                            }
+                        }
+
+                        if (semanticRoleResult._Object != null)
+                        {
+                            <tr>
+                                <td style="font-weight:bold;">
+                                    @Html.Raw(string.Format("Objeto: {0}", semanticRoleResult._Object.Text))
+                                </td>
+                            </tr>
+
+                            if (semanticRoleResult._Object.Keywords != null && semanticRoleResult._Object.Keywords.Count > 0)
+                            {
+                                foreach (var keyword in semanticRoleResult._Object.Keywords)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.Raw("Palabra clave: " + keyword.Text)
+                                        </td>
+                                    </tr>
+
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                @if (Model.Sentiment != null)
+                {
+                    if (Model.Sentiment.Document != null)
+                    {
+                        <tr>
+                            <td style="font-weight:bold;">
+                                @Html.Raw("Puntaje Sentimiento del documento: " + Model.Sentiment.Document.Score)
+                            </td>
+                        </tr>
+
+
+                        if (Model.Sentiment.Targets != null && Model.Sentiment.Targets.Count > 0)
+                        {
+                            foreach (var targetedSentimentResult in Model.Sentiment.Targets)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.Raw(string.Format("Resultados de Sentimiento objetivo: {0} | Puntaje: {1}", targetedSentimentResult.Text, targetedSentimentResult.Score))
+                                    </td>
+                                </tr>
+
+                            }
+                        }
+                    }
+                }
+
+                @if (Model == null)
+                {
+                    <tr>
+                        <td>
+                            @Html.Raw("Resultado es nulo")
+                        </td>
+                    </tr>
+                }
+
+
+            </tbody>
+        </table>
+
+    </div>*@
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

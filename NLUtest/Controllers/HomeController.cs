@@ -32,6 +32,7 @@ namespace NLUtest.Controllers
         #region Visual Recognition parameters
         // create a Tone Analyzer Service instance
         private VisualRecognitionService _visualRecognition = new VisualRecognitionService();
+        private static string _apikey = "1035407f25f1e143bac6598920ddfae8786bec7e";
 
         #endregion
 
@@ -73,8 +74,13 @@ namespace NLUtest.Controllers
 
         private string _nluText;
 
-
         public IActionResult Index()
+        {
+
+            return View();
+        }
+
+        public IActionResult NLU()
         {
             //_nluText = Get_HTML("https://www.tripadvisor.com.pe/ShowUserReviews-g946508-d2308972-r263835732-Restaurant_El_Refugio_de_Mamaine-Chincha_Alta_Ica_Region.html");
 
@@ -95,10 +101,10 @@ namespace NLUtest.Controllers
 
             AnalysisResults model = NaturalLanguageUnderstandingExample(userNLU, pswNLU);
 
-            return View("Index", model);
+            return View("NLU", model);
         }
 
-        public IActionResult About()
+        public IActionResult Discovery()
         {
             _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
@@ -823,23 +829,14 @@ namespace NLUtest.Controllers
         }
         #endregion
 
-        public IActionResult Contact()
+        public IActionResult VisualR()
         {
             ViewData["Message"] = "Visual Recognition";
 
             //https://github.com/watson-developer-cloud/dotnet-standard-sdk/tree/development/src/IBM.WatsonDeveloperCloud.VisualRecognition.v3
 
             // set the credentials
-            _visualRecognition.SetCredential("<apikey>");
-
-
-
-            //  classify using an image url
-            var result = _visualRecognition.Classify("<image-url>");
-
-            //  detect faces using an image url
-            var result2 = _visualRecognition.DetectFaces("<face-url>");
-
+            _visualRecognition.SetCredential(_apikey);
 
 
 
