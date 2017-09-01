@@ -1,5 +1,6 @@
 ﻿@model IBM.WatsonDeveloperCloud.NaturalLanguageUnderstanding.v1.Model.AnalysisResults
-@using NLUtest.Helpers
+@using NLUtest.Helpers;
+@using Newtonsoft.Json;
 
 @section Styles{
     <link href="~/css/NLU.css" rel="stylesheet" />
@@ -9,7 +10,7 @@
             margin: 2rem 0;
         }
 
-        button {
+        #btnQuery {
             margin: 1rem 1rem 1rem 0;
         }
     </style>
@@ -27,10 +28,20 @@
 <div>
     <div class="alert alert-info" role="alert">Ingrese su fuente a consultar (Texto o URL)</div>
 
-    <form asp-action="AnalyzeNLU">
+    <form asp-action="NLU" method="post">
         <textarea asp-for="AnalyzedText" class="form-control" rows="5"></textarea>
+
+        <div class="form-group">
+            <label for="queryModelID">Modelo ID</label>
+            <input class="form-control" type="text" id="queryModelID" placeholder="Seleccione su modelo... (opcional)" />
+        </div>
+
         <button id="btnQuery" type="submit" class="btn btn-success">Analizar</button>
     </form>
+
+
+    <div id="jsonResult"></div>
+
 </div>
 
 
@@ -38,36 +49,35 @@
     <div class="tab-panels" role="tabpanel">
         <ul class="tab-panels--tab-list" role="tablist">
             <li class="tab-panels--tab-list-item base--li" role="presentation">
-                <a href="#sentiment" class=" tab-panels--tab base--a" role="tab">Sentimientos</a>
+                <a href="#sentiment" class="tab-panels--tab base--a active" role="tab">Sentimientos</a>
             </li>
             <li class="tab-panels--tab-list-item base--li" role="presentation">
-                <a href="#emotion" class=" tab-panels--tab base--a" role="tab">Emociones</a>
+                <a href="#emotion" class="tab-panels--tab base--a" role="tab">Emociones</a>
             </li>
             <li class="tab-panels--tab-list-item base--li" role="presentation">
                 <a href="#keywords" class="tab-panels--tab base--a" role="tab">Palabras clave</a>
             </li>
             <li class="tab-panels--tab-list-item base--li" role="presentation">
-                <a href="#entities" class=" tab-panels--tab base--a" role="tab">Entidades</a>
+                <a href="#entities" class="tab-panels--tab base--a" role="tab">Entidades</a>
             </li>
             <li class="tab-panels--tab-list-item base--li" role="presentation">
-                <a href="#categories" class=" tab-panels--tab base--a" role="tab">Categorias</a>
+                <a href="#categories" class="tab-panels--tab base--a" role="tab">Categorias</a>
             </li>
             <li class="tab-panels--tab-list-item base--li" role="presentation">
-                <a href="#concept" class=" tab-panels--tab base--a" role="tab">Conceptos</a>
+                <a href="#concept" class="tab-panels--tab base--a" role="tab">Conceptos</a>
             </li>
             <li class="tab-panels--tab-list-item base--li" role="presentation">
-                <a href="#semantic-roles" class=" tab-panels--tab base--a" role="tab">Roles Semánticos</a>
+                <a href="#semanticRoles" class="tab-panels--tab base--a" role="tab">Roles Semánticos</a>
             </li>
         </ul>
 
         <div class="tab-panels--tab-content">
 
-
             @if (Model.Sentiment != null)
             {
                 if (Model.Sentiment.Document != null)
                 {
-                    <div data-id="Sentiment">
+                    <div id="sentiment">
                         <div class="content_1nbo4jo">
                             <h4 class="base--h4">Sentimiento Promedio</h4>
                             <div class="table_gbr7c2">
@@ -79,56 +89,569 @@
                                         <div class="inner_r99te6-o_O-inner_one_zdxht7">
                                             <div class="container_vx4ry">
                                                 <div class="fullBar_4elwo4">
-                                                    @{ 
-                                                        var _sentimentScore = Math.Round((decimal)Model.Sentiment.Document.Score * 100, 2);
+                                                    @{
+                                                        var _sentimentScore = Math.Abs(Math.Round((decimal)Model.Sentiment.Document.Score * 100, 2));
+                                                        string _sentimentColor;
+
+                                                        if (Model.Sentiment.Document.Label == "negative")
+                                                        {
+                                                            _sentimentColor = "red";
+                                                        }
+                                                        else
+                                                        {
+                                                            _sentimentColor = "green";
+                                                        }
                                                     }
 
-                                                    <div class="bar_10gqm3h" style="width: @_sentimentScore%;"></div>
+                                                    <div class="bar_10gqm3h" style="width: @_sentimentScore%;background-color: @_sentimentColor"></div>
                                                 </div>
                                                 <div class="score_1n73tp1">@Model.Sentiment.Document.Score</div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
+
+                                <div class="row_5ge9bd">
+                                    <div data-th="name" class="cell_wal1f9-o_O-cell_one_1xxaqvq">
+                                        <div class="inner_r99te6-o_O-inner_one_zdxht7">Idioma</div>
+                                    </div>
+                                    <div data-th="score" class="cell_wal1f9-o_O-cell_one_1xxaqvq">
+                                        <div class="inner_r99te6-o_O-inner_one_zdxht7">
+                                            <div class="container_vx4ry">
+                                                <div>@Model.Language</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
                             </div>
+
+                            @if (Model.Metadata != null)
+                    {
+                        var metadata = Model.Metadata;
+
+                        if (metadata.Authors != null && metadata.Authors.Count > 0)
+                        {
+                                    <ul>
+                                        @foreach (var author in metadata.Authors)
+                                        {
+                                            <li>
+                                                @Html.Raw("Autor: " + author.Name)
+                                            </li>
+
+                                        }
+                                    </ul>
+                                }
+                            }
+
+                        </div>
+
+
+                    </div>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <div id="sentiment" class="hidden">
+                                                                <h4 class="alert alert-warning">No se encontraron resultados de Sentimientos</h4>
+                                                            </div>
+                                                        }
+
+            @if (Model.Emotion != null)
+            {
+                if (Model.Emotion.Document != null)
+                {
+                    if (Model.Emotion.Document.Emotion != null)
+                    {
+                        var emotionScores = Model.Emotion.Document.Emotion;
+
+                        <div id="emotion" class="hidden">
+                            <div class="content_1nbo4jo">
+                                <h4>Resumen Emociones</h4>
+                                <div class="table_1w0bkxa">
+
+                                    <div class="row_3vb8oh">
+                                        <div data-th="name" class="cell_ovtj8t-o_O-cell_one_1xxaqvq">
+                                            <div class="inner_r99te6-o_O-inner_one_zdxht7">Alegría</div>
+                                        </div>
+                                        <div data-th="score" class="cell_ovtj8t-o_O-cell_one_1xxaqvq">
+                                            <div class="inner_r99te6-o_O-inner_one_zdxht7">
+                                                <div class="container_vx4ry">
+                                                    <div class="fullBar_4elwo4">
+                                                        <div class="bar_10gqm3h" style="width: @(emotionScores.Joy * 100)%;"></div>
+                                                    </div>
+                                                    <div class="score_1n73tp1">@emotionScores.Joy</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row_3vb8oh">
+                                        <div data-th="name" class="cell_ovtj8t-o_O-cell_one_1xxaqvq">
+                                            <div class="inner_r99te6-o_O-inner_one_zdxht7">Enojo</div>
+                                        </div>
+                                        <div data-th="score" class="cell_ovtj8t-o_O-cell_one_1xxaqvq">
+                                            <div class="inner_r99te6-o_O-inner_one_zdxht7">
+                                                <div class="container_vx4ry">
+                                                    <div class="fullBar_4elwo4">
+                                                        <div class="bar_10gqm3h" style="width: @(emotionScores.Anger * 100)%;"></div>
+                                                    </div>
+                                                    <div class="score_1n73tp1">@emotionScores.Anger</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row_3vb8oh">
+                                        <div data-th="name" class="cell_ovtj8t-o_O-cell_one_1xxaqvq">
+                                            <div class="inner_r99te6-o_O-inner_one_zdxht7">Disgusto</div>
+                                        </div>
+                                        <div data-th="score" class="cell_ovtj8t-o_O-cell_one_1xxaqvq">
+                                            <div class="inner_r99te6-o_O-inner_one_zdxht7">
+                                                <div class="container_vx4ry">
+                                                    <div class="fullBar_4elwo4">
+                                                        <div class="bar_10gqm3h" style="width: @(emotionScores.Disgust * 100)%;"></div>
+                                                    </div>
+                                                    <div class="score_1n73tp1">@emotionScores.Disgust</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="row_3vb8oh">
+                                        <div data-th="name" class="cell_ovtj8t-o_O-cell_one_1xxaqvq">
+                                            <div class="inner_r99te6-o_O-inner_one_zdxht7">Tristeza</div>
+                                        </div>
+                                        <div data-th="score" class="cell_ovtj8t-o_O-cell_one_1xxaqvq">
+                                            <div class="inner_r99te6-o_O-inner_one_zdxht7">
+                                                <div class="container_vx4ry">
+                                                    <div class="fullBar_4elwo4">
+                                                        <div class="bar_10gqm3h" style="width: @(emotionScores.Sadness * 100)%;"></div>
+                                                    </div>
+                                                    <div class="score_1n73tp1">@emotionScores.Sadness</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row_3vb8oh">
+                                        <div data-th="name" class="cell_ovtj8t-o_O-cell_one_1xxaqvq">
+                                            <div class="inner_r99te6-o_O-inner_one_zdxht7">Miedo</div>
+                                        </div>
+                                        <div data-th="score" class="cell_ovtj8t-o_O-cell_one_1xxaqvq">
+                                            <div class="inner_r99te6-o_O-inner_one_zdxht7">
+                                                <div class="container_vx4ry">
+                                                    <div class="fullBar_4elwo4">
+                                                        <div class="bar_10gqm3h" style="width: @(emotionScores.Fear * 100)%;"></div>
+                                                    </div>
+                                                    <div class="score_1n73tp1">@emotionScores.Fear</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            @if (Model.Emotion.Targets != null && Model.Emotion.Targets.Count > 0)
+                            {
+                                foreach (var targetedEmotionResult in Model.Emotion.Targets)
+                                {
+                                    <div style="font-weight:bold;">
+                                        @Html.Raw(string.Format("Resultado Emoción: {0}", targetedEmotionResult.Text))
+                                    </div>
+
+                                    if (targetedEmotionResult.Emotion != null)
+                                    {
+                                        var targetEmotionScores = targetedEmotionResult.Emotion;
+
+                                        <div>
+                                            @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", targetEmotionScores.Anger, targetEmotionScores.Disgust, targetEmotionScores.Fear, targetEmotionScores.Joy, targetEmotionScores.Sadness))
+                                        </div>
+                                    }
+                                }
+
+                            }
+                        </div>
+
+                    }
+
+                }
+            }
+            else
+            {
+                <div id="emotion" class="hidden">
+                    <h4 class="alert alert-warning">No se encontraron resultados de Emociones</h4>
+                </div>
+            }
+
+
+
+            @if (Model.Keywords != null && Model.Keywords.Count > 0)
+            {
+                <div id="keywords" class="hidden">
+
+                    <div class="content_1nbo4jo">
+                        <div class="table_gbr7c2">
+                            <div class="row_2z5yc-o_O-row_header_14vn20j">
+                                <div class="cell_a1fdw-o_O-cell_header_j30xuc">Texto</div>
+                                <div class="cell_a1fdw-o_O-cell_header_j30xuc">Relevancia</div>
+                            </div>
+
+
+
+                            @foreach (var keywordResult in Model.Keywords)
+                            {
+
+
+                                <div class="row_2z5yc">
+                                    <div data-th="Text" class="cell_a1fdw">
+                                        <div class="inner_r99te6">@keywordResult.Text</div>
+                                    </div>
+                                    <div data-th="Relevance" class="cell_a1fdw">
+                                        <div class="inner_r99te6">
+                                            <div class="container_vx4ry">
+                                                <div class="fullBar_4elwo4">
+                                                    <div class="bar_10gqm3h" style="width: @(keywordResult.Relevance * 100)%;"></div>
+                                                </div>
+                                                <div class="score_1n73tp1">@keywordResult.Relevance</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+                                if (keywordResult.Emotion != null)
+                                {
+                                    var emotionScores = keywordResult.Emotion;
+
+                                    <div>
+                                        @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
+                                    </div>
+
+                                }
+
+                                if (keywordResult.Sentiment != null)
+                                {
+                                    <div>
+                                        @Html.Raw("Puntaje Sentimiento: " + keywordResult.Sentiment.Score)
+                                    </div>
+
+                                }
+                            }
+
+
+
+
                         </div>
                     </div>
-                }
+
+                </div>
+
+            }
+            else
+            {
+                <div id="keywords" class="hidden">
+                    <h4 class="alert alert-warning">No se encontraron resultados de Palabras Clave</h4>
+                </div>
+            }
+
+
+
+            @if (Model.Entities != null && Model.Entities.Count > 0)
+            {
+                <div id="entities" class="hidden">
+                    <div class="content_1nbo4jo">
+                        <div class="table_two_11cv1df">
+
+                            @foreach (var entityResult in Model.Entities)
+                            {
+
+
+                                <div class="row_two_1gb2utq">
+                                    <div data-th="Name" class="cell_two_1wryi2u">
+                                        <div class="inner_two_1fem12x">@entityResult.Text</div>
+                                    </div>
+                                    <div data-th="Type" class="cell_two_1wryi2u">
+                                        <div class="inner_two_1fem12x">@entityResult.Type</div>
+                                    </div>
+                                    <div data-th="Score" class="cell_two_1wryi2u">
+                                        <div class="inner_two_1fem12x">
+                                            <div class="container_vx4ry">
+                                                <div class="fullBar_4elwo4">
+                                                    <div class="bar_10gqm3h" style="width: @(entityResult.Relevance * 100)%;"></div>
+                                                </div>
+                                                <div class="score_1n73tp1">@entityResult.Relevance</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+                                if (entityResult.Emotion != null)
+                                {
+                                    var emotionScores = entityResult.Emotion;
+
+                                    <div>
+                                        @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
+                                    </div>
+
+                                }
+
+                                if (entityResult.Sentiment != null)
+                                {
+                                    if (entityResult.Sentiment.Score != null)
+                                    {
+                                        <div>
+                                            @Html.Raw("Puntaje Sentimiento: " + entityResult.Sentiment.Score)
+                                        </div>
+                                    }
+                                }
+
+                                if (entityResult.Disambiguation != null)
+                                {
+                                    var disambiguationResult = entityResult.Disambiguation;
+
+                                    <div style="font-weight:bold;">
+                                        @Html.Raw(string.Format("Desambiguación de nombre: {0} | dbpediaResource: {1}", disambiguationResult.Name, disambiguationResult.DbpediaResource))
+                                    </div>
+
+
+                                    foreach (string type in disambiguationResult.Subtype)
+                                    {
+                                        <div>
+                                            @Html.Raw("Sub tipo: " + type)
+                                        </div>
+                                    }
+                                }
+                            }
+
+                        </div>
+                    </div>
+                </div>
+
+            }
+            else
+            {
+                <div id="entities" class="hidden">
+                    <h4 class="alert alert-warning">No se encontraron resultados de Entidades</h4>
+                </div>
+            }
+
+            @if (Model.Categories != null && Model.Categories.Count > 0)
+            {
+                <div id="categories" class="hidden">
+                    <div class="content_1nbo4jo">
+                        <div class="table_two_11cv1df">
+                            <div class="row_two_1a7ixr4-o_O-row_header_two_gmrsk7">
+                                <div class="cell_two_83gczp-o_O-cell_header_two_j30xuc">Jerarquía</div>
+                                <div class="cell_two_83gczp-o_O-cell_header_two_j30xuc">Puntaje</div>
+                            </div>
+
+
+                            @foreach (var categoryResult in Model.Categories)
+                            {
+
+                                <div class="row_two_1a7ixr4">
+                                    <div data-th="Jerarquía" class="cell_two_83gczp-o_O-cell_one_1xxaqvq">
+                                        <div class="inner_two_1xz0cmb-o_O-inner_one_zdxht7">@categoryResult.Label</div>
+                                    </div>
+                                    <div data-th="Puntaje" class="cell_two_83gczp-o_O-cell_one_1xxaqvq">
+                                        <div class="inner_two_1xz0cmb-o_O-inner_one_zdxht7">
+                                            <div class="container_vx4ry">
+                                                <div class="fullBar_4elwo4">
+                                                    <div class="bar_10gqm3h" style="width: @(categoryResult.Score* 100)%;"></div>
+                                                </div>
+                                                <div class="score_1n73tp1">@categoryResult.Score</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            }
+
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div id="keywords" class="hidden">
+                    <h4 class="alert alert-warning">No se encontraron resultados de Categorías</h4>
+                </div>
+            }
+
+            @if (Model.Concepts != null && Model.Concepts.Count > 0)
+            {
+
+                <div id="concept" class="hidden">
+                    <div class="content_1nbo4jo">
+                        <div class="table_gbr7c2">
+                            <div class="row_g9p0ma-o_O-row_header_14vn20j">
+                                <div class="cell_a1fdw-o_O-cell_header_j30xuc">Concepto</div>
+                                <div class="cell_a1fdw-o_O-cell_header_j30xuc">Puntaje</div>
+                                <div class="cell_a1fdw-o_O-cell_header_j30xuc">Fuente</div>
+                            </div>
+
+
+                            @foreach (var item in Model.Concepts)
+                            {
+
+                                <div class="row_g9p0ma">
+                                    <div data-th="Concepto" class="cell_a1fdw">
+                                        <div class="inner_r99te6">@item.Text</div>
+                                    </div>
+                                    <div data-th="Puntaje" class="cell_a1fdw">
+                                        <div class="inner_r99te6">
+                                            <div class="container_vx4ry">
+                                                <div class="fullBar_4elwo4">
+                                                    <div class="bar_10gqm3h" style="width: @(item.Relevance * 100)%;"></div>
+                                                </div><div class="score_1n73tp1">@item.Relevance</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-th="Fuente" class="cell_a1fdw" style="margin-left: 4rem;">
+                                        <div class="inner_r99te6">@item.DbpediaResource</div>
+                                    </div>
+                                </div>
+
+
+                            }
+                        </div>
+                    </div>
+                </div>
+
+            }
+            else
+            {
+                <div id="keywords" class="hidden">
+                    <h4 class="alert alert-warning">No se encontraron resultados de Conceptos</h4>
+                </div>
+            }
+
+
+            @if (Model.SemanticRoles != null && Model.SemanticRoles.Count > 0)
+            {
+                <div id="semanticRoles" class="hidden">
+                    <div class="content_1nbo4jo">
+                        <div class="sentences">
+
+
+                            @foreach (var semanticRoleResult in Model.SemanticRoles)
+                            {
+                                string sentenceProcesed = semanticRoleResult.Sentence;
+
+
+                                    if (semanticRoleResult.Subject != null)
+                                    {
+
+                                        string _subject = "<span class='token_y1ksgi'>" +
+                                        "<span class='innerToken_11o1zgg'>" + semanticRoleResult.Subject.Text + "</span>" +
+                                        "<span class='label_1he74ll'>Sujeto</span></span>";
+
+                                        sentenceProcesed = sentenceProcesed.Replace(semanticRoleResult.Subject.Text, _subject);
+
+
+
+                                    @*if (semanticRoleResult.Subject.Entities != null && semanticRoleResult.Subject.Entities.Count > 0)
+                                        {
+                                            foreach (var entity in semanticRoleResult.Subject.Entities)
+                                            {
+                                                <div>
+                                                    @Html.Raw(string.Format("Tipo Entidad: {0} | text: {1}", entity.Type, entity.Text))
+                                                </div>
+
+                                            }
+                                        }
+
+                                        if (semanticRoleResult.Subject.Keywords != null && semanticRoleResult.Subject.Keywords.Count > 0)
+                                        {
+                                            foreach (var keyword in semanticRoleResult.Subject.Keywords)
+                                            {
+                                                <div>
+                                                    @Html.Raw(string.Format("Palabra clave: {0}", keyword.Text))
+                                                </div>
+
+                                            }
+                                        }*@
+                                    }
+
+                                if (semanticRoleResult.Action != null)
+                                {
+                                    string _action = "<span class='token_y1ksgi'>" +
+                                       "<span class='innerToken_11o1zgg'>" + semanticRoleResult.Action.Text + "</span>" +
+                                       "<span class='label_1he74ll'>Acción</span></span>";
+
+                                    sentenceProcesed = sentenceProcesed.Replace(semanticRoleResult.Action.Text, _action);
+
+                                    @*<div style="font-weight:bold;">
+                                            @Html.Raw(string.Format("Acción: {0} | Normalizado: {1}", semanticRoleResult.Action.Text, semanticRoleResult.Action.Normalized))
+                                        </div>*@
+
+
+                                    @*if (semanticRoleResult.Action.Verb != null)
+                                        {
+                                            <div>
+                                                @Html.Raw(string.Format("Verbo: {0} | Frase: {1}", semanticRoleResult.Action.Verb.Text, semanticRoleResult.Action.Verb.Tense))
+                                            </div>
+
+                                            }
+                                        }*@
+
+
+                                }
+
+
+                                if (semanticRoleResult._Object != null)
+                                {
+                                    string _object = "<span class='token_y1ksgi'>" +
+                                   "<span class='innerToken_11o1zgg'>" + semanticRoleResult._Object.Text + "</span>" +
+                                   "<span class='label_1he74ll'>Objeto</span></span>";
+
+                                    sentenceProcesed = sentenceProcesed.Replace(semanticRoleResult._Object.Text, _object);
+
+
+                                    @*if (semanticRoleResult._Object.Keywords != null && semanticRoleResult._Object.Keywords.Count > 0)
+                                        {
+                                            foreach (var keyword in semanticRoleResult._Object.Keywords)
+                                            {
+                                                <div>
+                                                    @Html.Raw("Palabra clave: " + keyword.Text)
+                                                </div>
+
+                                            }
+                                        }*@
+                                }
+
+                                <div class="sentence_1mnorux">
+                                    @Html.Raw(sentenceProcesed)
+                                </div>
+
+                            }
+
+
+                        </div>
+                    </div>
+                </div>
+
             }
 
 
         </div>
+
+
     </div>
 </div>
 
+
 @*<div class="row">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th style="font-size:large;color:red">
-                        Natural Language Understanding
-                    </th>
 
-                </tr>
-            </thead>
-            <tbody>
-                @if (!string.IsNullOrEmpty(Model.Language))
-                {
-                    <tr>
-                        <td style="font-weight:bold;">
-                            @Html.Raw(string.Format("Idioma: {0}", Model.Language))
-                        </td>
-                    </tr>
-                }
-
-                @if (!string.IsNullOrEmpty(Model.AnalyzedText))
-                {
-                    <tr>
-                        <td style="font-weight:bold;">
-                            @Html.Raw(string.Format("Texto analizado: {0}", Model.AnalyzedText))
-                        </td>
-                    </tr>
-                }
 
                 @if (!string.IsNullOrEmpty(Model.RetrievedUrl))
                 {
@@ -153,183 +676,6 @@
                 }
 
 
-                @if (Model.Concepts != null && Model.Concepts.Count > 0)
-                {
-                    foreach (var item in Model.Concepts)
-                    {
-                        <tr>
-                            <td>
-                                @Html.Raw(string.Format("Resultados de Concepto: {0}, Relevancia {1}, Fuente {2}", item.Text, item.Relevance, item.DbpediaResource))
-                            </td>
-                        </tr>
-                    }
-                }
-
-
-                @if (Model.Entities != null && Model.Entities.Count > 0)
-                {
-                    foreach (var entityResult in Model.Entities)
-                    {
-                        <tr>
-                            <td style="font-weight:bold;">
-                                @Html.Raw(string.Format("Tipo de Entidad: {0} | Relevancia: {1} | Total: {2} | Texto: {3}", entityResult.Type, entityResult.Relevance, entityResult.Count, entityResult.Text))
-                            </td>
-                        </tr>
-
-                        if (entityResult.Emotion != null)
-                        {
-                            var emotionScores = entityResult.Emotion;
-
-                            <tr>
-                                <td>
-                                    @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
-                                </td>
-                            </tr>
-
-                        }
-
-                        if (entityResult.Sentiment != null)
-                        {
-                            if (entityResult.Sentiment.Score != null)
-                            {
-                                <tr>
-                                    <td>
-                                        @Html.Raw("Puntaje Sentimiento: " + entityResult.Sentiment.Score)
-                                    </td>
-                                </tr>
-                            }
-                        }
-
-                        if (entityResult.Disambiguation != null)
-                        {
-                            var disambiguationResult = entityResult.Disambiguation;
-
-                            <tr>
-                                <td style="font-weight:bold;">
-                                    @Html.Raw(string.Format("Desambiguación de nombre: {0} | dbpediaResource: {1}", disambiguationResult.Name, disambiguationResult.DbpediaResource))
-                                </td>
-                            </tr>
-
-
-                            foreach (string type in disambiguationResult.Subtype)
-                            {
-                                <tr>
-                                    <td>
-                                        @Html.Raw("Sub tipo: " + type)
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    }
-                }
-
-                @if (Model.Keywords != null && Model.Keywords.Count > 0)
-                {
-                    foreach (var keywordResult in Model.Keywords)
-                    {
-                        <tr>
-                            <td style="font-weight:bold;">
-                                @Html.Raw(string.Format("Relevancia de palabras clave: {0}, Texto: {1}", keywordResult.Relevance, keywordResult.Text))
-                            </td>
-                        </tr>
-
-                        if (keywordResult.Emotion != null)
-                        {
-                            var emotionScores = keywordResult.Emotion;
-
-                            <tr>
-                                <td>
-                                    @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
-                                </td>
-                            </tr>
-
-                        }
-
-                        if (keywordResult.Sentiment != null)
-                        {
-                            <tr>
-                                <td>
-                                    @Html.Raw("Puntaje Sentimiento: " + keywordResult.Sentiment.Score)
-                                </td>
-                            </tr>
-
-                        }
-                    }
-                }
-
-                @if (Model.Categories != null && Model.Categories.Count > 0)
-                {
-                    foreach (var categoryResult in Model.Categories)
-                    {
-                        <tr>
-                            <td>
-                                @Html.Raw(string.Format("Categoría: {0} | Puntaje: {1}", categoryResult.Label, categoryResult.Score))
-                            </td>
-                        </tr>
-
-                    }
-                }
-
-
-                @if (Model.Emotion != null)
-                {
-                    if (Model.Emotion.Document != null)
-                    {
-                        if (Model.Emotion.Document.Emotion != null)
-                        {
-                            var emotionScores = Model.Emotion.Document.Emotion;
-
-                            <tr>
-                                <td style="font-weight:bold;">
-                                    @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
-                                </td>
-                            </tr>
-                        }
-                    }
-
-                    if (Model.Emotion.Targets != null && Model.Emotion.Targets.Count > 0)
-                    {
-                        foreach (var targetedEmotionResult in Model.Emotion.Targets)
-                        {
-                            <tr>
-                                <td style="font-weight:bold;">
-                                    @Html.Raw(string.Format("Resultado Emoción: {0}", targetedEmotionResult.Text))
-                                </td>
-                            </tr>
-
-                            if (targetedEmotionResult.Emotion != null)
-                            {
-                                var emotionScores = targetedEmotionResult.Emotion;
-
-                                <tr>
-                                    <td>
-                                        @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
-                                    </td>
-                                </tr>
-                            }
-                        }
-
-                    }
-                }
-
-
-                @if (Model.Metadata != null)
-                {
-                    var metadata = Model.Metadata;
-
-                    if (metadata.Authors != null && metadata.Authors.Count > 0)
-                    {
-                        foreach (var author in metadata.Authors)
-                        {
-                            <tr>
-                                <td>
-                                    @Html.Raw("Autor: " + author.Name)
-                                </td>
-                            </tr>
-
-                        }
-                    }
-                }
 
                 @if (Model.Relations != null && Model.Relations.Count > 0)
                 {
@@ -368,137 +714,58 @@
                     }
                 }
 
-                @if (Model.SemanticRoles != null && Model.SemanticRoles.Count > 0)
-                {
-                    foreach (var semanticRoleResult in Model.SemanticRoles)
-                    {
-                        <tr>
-                            <td style="font-weight:bold;">
-                                @Html.Raw(string.Format("Rol semántica: {0}", semanticRoleResult.Sentence))
-                            </td>
-                        </tr>
-
-                        if (semanticRoleResult.Subject != null)
-                        {
-                            <tr>
-                                <td style="font-weight:bold;">
-                                    @Html.Raw(string.Format("Sujeto semántica: {0}", semanticRoleResult.Subject.Text))
-                                </td>
-                            </tr>
-
-                            if (semanticRoleResult.Subject.Entities != null && semanticRoleResult.Subject.Entities.Count > 0)
-                            {
-                                foreach (var entity in semanticRoleResult.Subject.Entities)
-                                {
-                                    <tr>
-                                        <td>
-                                            @Html.Raw(string.Format("Tipo Entidad: {0} | text: {1}", entity.Type, entity.Text))
-                                        </td>
-                                    </tr>
-
-                                }
-                            }
-
-                            if (semanticRoleResult.Subject.Keywords != null && semanticRoleResult.Subject.Keywords.Count > 0)
-                            {
-                                foreach (var keyword in semanticRoleResult.Subject.Keywords)
-                                {
-                                    <tr>
-                                        <td>
-                                            @Html.Raw(string.Format("Palabra clave: {0}", keyword.Text))
-                                        </td>
-                                    </tr>
-
-                                }
-                            }
-                        }
-
-                        if (semanticRoleResult.Action != null)
-                        {
-                            <tr>
-                                <td style="font-weight:bold;">
-                                    @Html.Raw(string.Format("Acción: {0} | Normalizado: {1}", semanticRoleResult.Action.Text, semanticRoleResult.Action.Normalized))
-                                </td>
-                            </tr>
 
 
-                            if (semanticRoleResult.Action.Verb != null)
-                            {
-                                <tr>
-                                    <td>
-                                        @Html.Raw(string.Format("Verbo: {0} | Frase: {1}", semanticRoleResult.Action.Verb.Text, semanticRoleResult.Action.Verb.Tense))
-                                    </td>
-                                </tr>
-
-                            }
-                        }
-
-                        if (semanticRoleResult._Object != null)
-                        {
-                            <tr>
-                                <td style="font-weight:bold;">
-                                    @Html.Raw(string.Format("Objeto: {0}", semanticRoleResult._Object.Text))
-                                </td>
-                            </tr>
-
-                            if (semanticRoleResult._Object.Keywords != null && semanticRoleResult._Object.Keywords.Count > 0)
-                            {
-                                foreach (var keyword in semanticRoleResult._Object.Keywords)
-                                {
-                                    <tr>
-                                        <td>
-                                            @Html.Raw("Palabra clave: " + keyword.Text)
-                                        </td>
-                                    </tr>
-
-                                }
-                            }
-                        }
-                    }
-                }
-
-
-                @if (Model.Sentiment != null)
-                {
-                    if (Model.Sentiment.Document != null)
-                    {
-                        <tr>
-                            <td style="font-weight:bold;">
-                                @Html.Raw("Puntaje Sentimiento del documento: " + Model.Sentiment.Document.Score)
-                            </td>
-                        </tr>
-
-
-                        if (Model.Sentiment.Targets != null && Model.Sentiment.Targets.Count > 0)
-                        {
-                            foreach (var targetedSentimentResult in Model.Sentiment.Targets)
-                            {
-                                <tr>
-                                    <td>
-                                        @Html.Raw(string.Format("Resultados de Sentimiento objetivo: {0} | Puntaje: {1}", targetedSentimentResult.Text, targetedSentimentResult.Score))
-                                    </td>
-                                </tr>
-
-                            }
-                        }
-                    }
-                }
-
-                @if (Model == null)
-                {
-                    <tr>
-                        <td>
-                            @Html.Raw("Resultado es nulo")
-                        </td>
-                    </tr>
-                }
-
-
-            </tbody>
-        </table>
 
     </div>*@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script src="~/js/renderjson.js"></script>
+
+    <script>
+        $(function () {
+
+
+            $(".tab-panels--tab.base--a").on("click", function () {
+                var _target = $(this).prop("hash");
+
+                $(".tab-panels--tab.base--a").removeClass("active");
+                $(this).addClass("active");
+
+                $(".tab-panels--tab-content > div").addClass("hidden");
+                $(_target).removeClass("hidden");
+            });
+
+            $("#btnQuery").on("click", function () {
+
+                //if ($(".output-section").hasClass("hidden") == false) {
+                //    $(".output-section").addClass("hidden");
+                //}
+
+                $("form").submit(function (e) {
+                    //$(".output-section").removeClass("hidden");
+                });
+
+
+            });
+
+            $("#jsonResult").html(renderjson.set_show_to_level(1)(@Html.Raw(JsonConvert.SerializeObject(Model))));
+
+            //$("form").bind('ajax:complete', function () {
+            //    $(".output-section").removeClass("hidden");
+
+            //});
+
+        }); //End Init
+
+
+
+        function tranlateWord(word) {
+
+
+        }
+
+    </script>
 }

@@ -73,6 +73,7 @@ namespace NLUtest.Controllers
         //private string _nluText = "Analyze various features of text content at scale. Provide text, raw HTML, or a public URL, and IBM Watson Natural Language Understanding will give you results for the features you request. The service cleans HTML content before analysis by default, so the results can ignore most advertisements and other unwanted content.";
 
         private string _nluText;
+        private string _nluModel;
 
         public IActionResult Index()
         {
@@ -95,13 +96,14 @@ namespace NLUtest.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AnalyzeNLU(AnalysisResults results)
+        public IActionResult NLU(string AnalyzedText, string queryModelID)
         {
-            _nluText = results.AnalyzedText;
+            _nluText = AnalyzedText;
+            _nluModel = queryModelID;
 
             AnalysisResults model = NaturalLanguageUnderstandingExample(userNLU, pswNLU);
 
-            return View("NLU", model);
+            return View(model);
         }
 
         public IActionResult Discovery()
@@ -882,14 +884,14 @@ namespace NLUtest.Controllers
 
             AnalysisResults model = new AnalysisResults();
 
-            model = Analyze();
+            model = Analyze(_nluModel);
             return model;
 
         }
         #endregion
 
         #region Analyze
-        public AnalysisResults Analyze()
+        public AnalysisResults Analyze(string queryModelID)
         {
             List<string> model = new List<string>();
 
@@ -911,35 +913,33 @@ namespace NLUtest.Controllers
 
             Parameters parameters = new Parameters()
             {
+                Clean = true,
+                FallbackToRaw = true,
                 ReturnAnalyzedText = true,
                 Features = new Features()
                 {
-                    Relations = new RelationsOptions()
-                    {
-                        //Model = "Specify the ID of a deployed Watson Knowledge Studio custom model to override the default model"
-                    },
+                    Relations = new RelationsOptions(),
                     Sentiment = new SentimentOptions()
                     {
-                        Document = true,
-                        Targets = _targets
+                        Document = true
+                        //Targets = _targets
                     },
                     Emotion = new EmotionOptions()
                     {
-                        Document = true,
-                        Targets = _emotions
+                        Document = true
+                        //Targets = _emotions
                     },
                     Keywords = new KeywordsOptions()
                     {
-                        Limit = 8,
+                        Limit = 50,
                         Sentiment = true,
                         Emotion = true
                     },
                     Entities = new EntitiesOptions()
                     {
-                        Limit = 8,
+                        Limit = 50,
                         Emotion = true,
                         Sentiment = true
-                        //Model = "Default"
                     },
                     Categories = new CategoriesOptions(),
                     Concepts = new ConceptsOptions()
@@ -948,21 +948,30 @@ namespace NLUtest.Controllers
                     },
                     SemanticRoles = new SemanticRolesOptions()
                     {
-                        Limit = 8,
+                        Limit = 50,
                         Entities = true,
                         Keywords = true
                     }
                 }
             };
 
+            if (!string.IsNullOrEmpty(queryModelID))
+            {
+                parameters.Features.Relations.Model = queryModelID;
+                parameters.Features.Entities.Model = queryModelID;
+            }
+
             if (_nluText.StartsWith("http"))
             {
                 parameters.Url = _nluText;
+                parameters.Features.Metadata = new MetadataOptions();
             }
             else
             {
                 parameters.Text = _nluText;
             }
+
+            //parameters.Language = "en";
 
             Console.WriteLine(string.Format("\nAnalizando()..."));
 
@@ -1190,6 +1199,7 @@ namespace NLUtest.Controllers
             {
                 model.Add("Resultado es nulo");
             }
+
 
             return result;
         }
