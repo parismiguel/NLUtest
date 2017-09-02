@@ -87,7 +87,12 @@ namespace NLUtest.Controllers
 
 
             AnalysisResults model = new AnalysisResults();
-            model.AnalyzedText = "Luego de 10 años, volví a este restaurante. Sin duda alguna, su plato fuerte es la Sopa Seca con Carapulcra, es la mejor que he probado. La atención es A1. Eso sí, en fechas festivas es mejor ir desde temprano ya que el lugar, a pesar de ser grande, se llena rápidamente.";
+
+            //model.AnalyzedText = "Luego de 10 años, volví a este restaurante. Sin duda alguna, su plato fuerte es la Sopa Seca con Carapulcra, es la mejor que he probado. La atención es A1. Eso sí, en fechas festivas es mejor ir desde temprano ya que el lugar, a pesar de ser grande, se llena rápidamente.";
+            model.AnalyzedText = System.IO.File.ReadAllText(@"..\NLUtest\wwwroot\Donde puedo comer el mejor lomo saltado.txt");
+
+
+            ViewData["modelID"] = "10:d9c5bbdf-f77f-4561-889c-098854e301aa";
 
             return View(model);
         }
@@ -100,6 +105,8 @@ namespace NLUtest.Controllers
         {
             _nluText = AnalyzedText;
             _nluModel = queryModelID;
+
+            ViewData["modelID"] = _nluModel;
 
             AnalysisResults model = NaturalLanguageUnderstandingExample(userNLU, pswNLU);
 

@@ -33,7 +33,7 @@
 
         <div class="form-group">
             <label for="queryModelID">Modelo ID</label>
-            <input class="form-control" type="text" id="queryModelID" placeholder="Seleccione su modelo... (opcional)" />
+            <input class="form-control" type="text" name="queryModelID" value="@ViewData["modelID"]" placeholder="Seleccione su modelo... (opcional)" />
         </div>
 
         <button id="btnQuery" type="submit" class="btn btn-success">Analizar</button>
@@ -83,7 +83,7 @@
                             <div class="table_gbr7c2">
                                 <div class="row_5ge9bd">
                                     <div data-th="name" class="cell_wal1f9-o_O-cell_one_1xxaqvq">
-                                        <div class="inner_r99te6-o_O-inner_one_zdxht7">@StringHelper.UppercaseFirst(Model.Sentiment.Document.Label)</div>
+                                        <div id="labelSentiment" class="inner_r99te6-o_O-inner_one_zdxht7">@StringHelper.UppercaseFirst(Model.Sentiment.Document.Label)</div>                                        
                                     </div>
                                     <div data-th="score" class="cell_wal1f9-o_O-cell_one_1xxaqvq">
                                         <div class="inner_r99te6-o_O-inner_one_zdxht7">
@@ -109,6 +109,8 @@
                                             </div>
                                         </div>
                                     </div>
+                                
+
                                 </div>
 
 
@@ -119,7 +121,29 @@
                                     <div data-th="score" class="cell_wal1f9-o_O-cell_one_1xxaqvq">
                                         <div class="inner_r99te6-o_O-inner_one_zdxht7">
                                             <div class="container_vx4ry">
-                                                <div>@Model.Language</div>
+
+                                                @{
+                                                    string _lang;
+
+                                                    switch (Model.Language)
+                                                    {
+                                                        case "en":
+                                                            _lang = "Inglés";
+                                                            break;
+
+                                                        case "es":
+                                                            _lang = "Español"; _lang = "Inglés";
+                                                            break;
+                                                        default:
+                                                            _lang = Model.Language;
+                                                            break;
+                                                    }
+
+
+                                                }
+
+                                                <div>@_lang</div>
+
                                             </div>
                                         </div>
                                     </div>
@@ -134,15 +158,15 @@
 
                         if (metadata.Authors != null && metadata.Authors.Count > 0)
                         {
-                                    <ul>
-                                        @foreach (var author in metadata.Authors)
+                            <ul>
+                                @foreach (var author in metadata.Authors)
                                         {
-                                            <li>
-                                                @Html.Raw("Autor: " + author.Name)
-                                            </li>
+                                        <li>
+                                            @Html.Raw("Autor: " + author.Name)
+                                        </li>
 
                                         }
-                                    </ul>
+                            </ul>
                                 }
                             }
 
@@ -150,14 +174,14 @@
 
 
                     </div>
-                                                            }
                                                         }
-                                                        else
-                                                        {
-                                                            <div id="sentiment" class="hidden">
-                                                                <h4 class="alert alert-warning">No se encontraron resultados de Sentimientos</h4>
-                                                            </div>
-                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <div id="sentiment" class="hidden">
+                                                            <h4 class="alert alert-warning">No se encontraron resultados de Sentimientos</h4>
+                                                        </div>
+                                                    }
 
             @if (Model.Emotion != null)
             {
@@ -260,17 +284,17 @@
                             {
                                 foreach (var targetedEmotionResult in Model.Emotion.Targets)
                                 {
-                                    <div style="font-weight:bold;">
-                                        @Html.Raw(string.Format("Resultado Emoción: {0}", targetedEmotionResult.Text))
-                                    </div>
+                            <div style="font-weight:bold;">
+                                @Html.Raw(string.Format("Resultado Emoción: {0}", targetedEmotionResult.Text))
+                            </div>
 
                                     if (targetedEmotionResult.Emotion != null)
                                     {
                                         var targetEmotionScores = targetedEmotionResult.Emotion;
 
-                                        <div>
-                                            @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", targetEmotionScores.Anger, targetEmotionScores.Disgust, targetEmotionScores.Fear, targetEmotionScores.Joy, targetEmotionScores.Sadness))
-                                        </div>
+                            <div>
+                                @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", targetEmotionScores.Anger, targetEmotionScores.Disgust, targetEmotionScores.Fear, targetEmotionScores.Joy, targetEmotionScores.Sadness))
+                            </div>
                                     }
                                 }
 
@@ -307,21 +331,21 @@
                             {
 
 
-                                <div class="row_2z5yc">
-                                    <div data-th="Text" class="cell_a1fdw">
-                                        <div class="inner_r99te6">@keywordResult.Text</div>
-                                    </div>
-                                    <div data-th="Relevance" class="cell_a1fdw">
-                                        <div class="inner_r99te6">
-                                            <div class="container_vx4ry">
-                                                <div class="fullBar_4elwo4">
-                                                    <div class="bar_10gqm3h" style="width: @(keywordResult.Relevance * 100)%;"></div>
-                                                </div>
-                                                <div class="score_1n73tp1">@keywordResult.Relevance</div>
+                            <div class="row_2z5yc">
+                                <div data-th="Text" class="cell_a1fdw">
+                                    <div class="inner_r99te6">@keywordResult.Text</div>
+                                </div>
+                                <div data-th="Relevance" class="cell_a1fdw">
+                                    <div class="inner_r99te6">
+                                        <div class="container_vx4ry">
+                                            <div class="fullBar_4elwo4">
+                                                <div class="bar_10gqm3h" style="width: @(keywordResult.Relevance * 100)%;"></div>
                                             </div>
+                                            <div class="score_1n73tp1">@keywordResult.Relevance</div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
 
 
@@ -329,17 +353,17 @@
                                 {
                                     var emotionScores = keywordResult.Emotion;
 
-                                    <div>
-                                        @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
-                                    </div>
+                            <div>
+                                @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
+                            </div>
 
                                 }
 
                                 if (keywordResult.Sentiment != null)
                                 {
-                                    <div>
-                                        @Html.Raw("Puntaje Sentimiento: " + keywordResult.Sentiment.Score)
-                                    </div>
+                            <div>
+                                @Html.Raw("Puntaje Sentimiento: " + keywordResult.Sentiment.Score)
+                            </div>
 
                                 }
                             }
@@ -368,18 +392,23 @@
                     <div class="content_1nbo4jo">
                         <div class="table_two_11cv1df">
 
+                            <div class="row_two_1gb2utq-o_O-row_header_two_1atn07p">
+                                <div class="cell_two_1wryi2u-o_O-cell_header_two_18ie75j">Nombre</div>
+                                <div class="cell_two_1wryi2u-o_O-cell_header_two_18ie75j">Tipo</div>
+                                <div class="cell_two_1wryi2u-o_O-cell_header_two_18ie75j">Puntaje</div>
+                            </div>
+
                             @foreach (var entityResult in Model.Entities)
                             {
-
-
+                                
                                 <div class="row_two_1gb2utq">
-                                    <div data-th="Name" class="cell_two_1wryi2u">
+                                    <div data-th="Nombre" class="cell_two_1wryi2u">
                                         <div class="inner_two_1fem12x">@entityResult.Text</div>
                                     </div>
-                                    <div data-th="Type" class="cell_two_1wryi2u">
+                                    <div data-th="Tipo" class="cell_two_1wryi2u">
                                         <div class="inner_two_1fem12x">@entityResult.Type</div>
                                     </div>
-                                    <div data-th="Score" class="cell_two_1wryi2u">
+                                    <div data-th="Puntaje" class="cell_two_1wryi2u">
                                         <div class="inner_two_1fem12x">
                                             <div class="container_vx4ry">
                                                 <div class="fullBar_4elwo4">
@@ -393,42 +422,43 @@
 
 
 
-                                if (entityResult.Emotion != null)
-                                {
-                                    var emotionScores = entityResult.Emotion;
-
-                                    <div>
-                                        @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
-                                    </div>
-
-                                }
-
-                                if (entityResult.Sentiment != null)
-                                {
-                                    if (entityResult.Sentiment.Score != null)
+                                @*if (entityResult.Emotion != null)
                                     {
+                                        var emotionScores = entityResult.Emotion;
+
                                         <div>
-                                            @Html.Raw("Puntaje Sentimiento: " + entityResult.Sentiment.Score)
+                                            @Html.Raw(string.Format("Enojo: {0} | Disgusto: {1} | Miedo: {2} | Alegría: {3} | Tristeza: {4}", emotionScores.Anger, emotionScores.Disgust, emotionScores.Fear, emotionScores.Joy, emotionScores.Sadness))
                                         </div>
+
                                     }
-                                }
 
-                                if (entityResult.Disambiguation != null)
-                                {
-                                    var disambiguationResult = entityResult.Disambiguation;
-
-                                    <div style="font-weight:bold;">
-                                        @Html.Raw(string.Format("Desambiguación de nombre: {0} | dbpediaResource: {1}", disambiguationResult.Name, disambiguationResult.DbpediaResource))
-                                    </div>
-
-
-                                    foreach (string type in disambiguationResult.Subtype)
+                                    if (entityResult.Sentiment != null)
                                     {
-                                        <div>
-                                            @Html.Raw("Sub tipo: " + type)
-                                        </div>
+                                        if (entityResult.Sentiment.Score != null)
+                                        {
+                                            <div>
+                                                @Html.Raw("Puntaje Sentimiento: " + entityResult.Sentiment.Score)
+                                            </div>
+                                        }
                                     }
-                                }
+
+                                    if (entityResult.Disambiguation != null)
+                                    {
+                                        var disambiguationResult = entityResult.Disambiguation;
+
+                                        <div style="font-weight:bold;">
+                                            @Html.Raw(string.Format("Desambiguación de nombre: {0} | dbpediaResource: {1}", disambiguationResult.Name, disambiguationResult.DbpediaResource))
+                                        </div>
+
+
+                                        foreach (string type in disambiguationResult.Subtype)
+                                        {
+                                            <div>
+                                                @Html.Raw("Sub tipo: " + type)
+                                            </div>
+                                        }
+                                    }*@
+
                             }
 
                         </div>
@@ -548,14 +578,14 @@
                                 string sentenceProcesed = semanticRoleResult.Sentence;
 
 
-                                    if (semanticRoleResult.Subject != null)
-                                    {
+                                if (semanticRoleResult.Subject != null)
+                                {
 
-                                        string _subject = "<span class='token_y1ksgi'>" +
-                                        "<span class='innerToken_11o1zgg'>" + semanticRoleResult.Subject.Text + "</span>" +
-                                        "<span class='label_1he74ll'>Sujeto</span></span>";
+                                    string _subject = "<span class='token_y1ksgi'>" +
+                                    "<span class='innerToken_11o1zgg'>" + semanticRoleResult.Subject.Text + "</span>" +
+                                    "<span class='label_1he74ll'>Sujeto</span></span>";
 
-                                        sentenceProcesed = sentenceProcesed.Replace(semanticRoleResult.Subject.Text, _subject);
+                                    sentenceProcesed = sentenceProcesed.Replace(semanticRoleResult.Subject.Text, _subject);
 
 
 
@@ -580,7 +610,7 @@
 
                                             }
                                         }*@
-                                    }
+                                }
 
                                 if (semanticRoleResult.Action != null)
                                 {
@@ -727,6 +757,8 @@
     <script>
         $(function () {
 
+            translateWord("#labelSentiment");
+
 
             $(".tab-panels--tab.base--a").on("click", function () {
                 var _target = $(this).prop("hash");
@@ -761,10 +793,21 @@
         }); //End Init
 
 
+        function translateWord(id) {
+            var apiKey = "trnsl.1.1.20170902T021944Z.3f41534bedfaec5b.2062b972cd4e76cb4421b4da419dd448c32a9fea";
 
-        function tranlateWord(word) {
+            var word = $(id).text();
 
+            if (word == "") {
+                return;
+            }
 
+            var url = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=" + apiKey +
+                "&text=" + word + "&lang=es";
+
+            $.get(url, function (response) {
+                $(id).html(response.text[0]);
+            });
         }
 
     </script>
