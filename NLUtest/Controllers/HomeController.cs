@@ -83,16 +83,26 @@ namespace NLUtest.Controllers
 
         public IActionResult NLU()
         {
-            //_nluText = Get_HTML("https://www.tripadvisor.com.pe/ShowUserReviews-g946508-d2308972-r263835732-Restaurant_El_Refugio_de_Mamaine-Chincha_Alta_Ica_Region.html");
-
 
             AnalysisResults model = new AnalysisResults();
-
-            //model.AnalyzedText = "Luego de 10 años, volví a este restaurante. Sin duda alguna, su plato fuerte es la Sopa Seca con Carapulcra, es la mejor que he probado. La atención es A1. Eso sí, en fechas festivas es mejor ir desde temprano ya que el lugar, a pesar de ser grande, se llena rápidamente.";
-            model.AnalyzedText = System.IO.File.ReadAllText(@"..\NLUtest\wwwroot\Donde puedo comer el mejor lomo saltado.txt");
-
-
             ViewData["modelID"] = "10:d9c5bbdf-f77f-4561-889c-098854e301aa";
+
+            try
+            {
+                //_nluText = Get_HTML("https://www.tripadvisor.com.pe/ShowUserReviews-g946508-d2308972-r263835732-Restaurant_El_Refugio_de_Mamaine-Chincha_Alta_Ica_Region.html");
+
+                //model.AnalyzedText = "Luego de 10 años, volví a este restaurante. Sin duda alguna, su plato fuerte es la Sopa Seca con Carapulcra, es la mejor que he probado. La atención es A1. Eso sí, en fechas festivas es mejor ir desde temprano ya que el lugar, a pesar de ser grande, se llena rápidamente.";
+                model.AnalyzedText = System.IO.File.ReadAllText(@"..\NLUtest\wwwroot\Donde puedo comer el mejor lomo saltado.txt");
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                model.AnalyzedText = "Luego de 10 años, volví a este restaurante. Sin duda alguna, su plato fuerte es la Sopa Seca con Carapulcra, es la mejor que he probado. La atención es A1. Eso sí, en fechas festivas es mejor ir desde temprano ya que el lugar, a pesar de ser grande, se llena rápidamente.";
+
+                return View(model);
+            }
 
             return View(model);
         }
@@ -121,6 +131,7 @@ namespace NLUtest.Controllers
             //ViewData["Configurations"] = GetConfigurations();
             //ViewData["Collections"] = GetCollections();
             ViewData["Documents"] = GetDocuments();
+            ViewData["queryDefault"] = "¿Donde puedo comer el mejor lomo saltado?";
 
             return View();
         }
@@ -821,20 +832,33 @@ namespace NLUtest.Controllers
 
 
         #region Query
-        [HttpPost]
-        public IActionResult Query(string collectionid, string query)
-        {
-            var result = _discovery.Query(_createdEnvironmentId, collectionid, null, null, query, true);
 
-            if (result != null)
+        [HttpPost]
+        public IActionResult QueryRequest(string environmentid, string collectionid, string queryrequest)
+        {
+            QueryResponse model = new QueryResponse();
+
+            try
             {
-                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
-                return Json(model);
+                _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
+
+                var result = _discovery.Query(_createdEnvironmentId, collectionid, null, null, queryrequest);
+
+                if (result != null)
+                {
+                    //model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                    model = result;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return Json("Resultado nulo");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.InnerException);
+
+                return Json(ex.Message);
             }
+
+            return Json(model);
         }
         #endregion
 

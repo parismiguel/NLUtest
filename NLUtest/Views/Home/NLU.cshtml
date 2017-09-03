@@ -132,7 +132,7 @@
                                                             break;
 
                                                         case "es":
-                                                            _lang = "Español"; _lang = "Inglés";
+                                                            _lang = "Español";
                                                             break;
                                                         default:
                                                             _lang = Model.Language;
@@ -174,14 +174,14 @@
 
 
                     </div>
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        <div id="sentiment" class="hidden">
-                                                            <h4 class="alert alert-warning">No se encontraron resultados de Sentimientos</h4>
-                                                        </div>
-                                                    }
+                 }
+             }
+             else
+             {
+                 <div id="sentiment" class="hidden">
+                     <h4 class="alert alert-warning">No se encontraron resultados de Sentimientos</h4>
+                 </div>
+             }
 
             @if (Model.Emotion != null)
             {
@@ -512,7 +512,7 @@
             }
             else
             {
-                <div id="keywords" class="hidden">
+                <div id="categories" class="hidden">
                     <h4 class="alert alert-warning">No se encontraron resultados de Categorías</h4>
                 </div>
             }
@@ -547,7 +547,7 @@
                                         </div>
                                     </div>
                                     <div data-th="Fuente" class="cell_a1fdw" style="margin-left: 4rem;">
-                                        <div class="inner_r99te6">@item.DbpediaResource</div>
+                                        <a href="@item.DbpediaResource" target="_blank" class="inner_r99te6">@item.DbpediaResource</a>
                                     </div>
                                 </div>
 
@@ -560,7 +560,7 @@
             }
             else
             {
-                <div id="keywords" class="hidden">
+                <div id="concept" class="hidden">
                     <h4 class="alert alert-warning">No se encontraron resultados de Conceptos</h4>
                 </div>
             }
@@ -671,6 +671,13 @@
                 </div>
 
             }
+            else
+            {
+                <div id="semanticRoles" class="hidden">
+                    <h4 class="alert alert-warning">No se encontraron resultados de Sentimientos</h4>
+                </div>
+            }
+
 
 
         </div>

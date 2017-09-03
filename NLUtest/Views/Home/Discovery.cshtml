@@ -168,7 +168,7 @@
     </a>
 
 <div id="divDocuments" class="collapse">
-    <p>@ViewData["Documents"]</p>
+    <p id="jsonDocuments">@ViewData["Documents"]</p>
 
     <div class="card">
         <div class="form-group">
@@ -188,14 +188,29 @@
 </a>
 
 
-<div id="divQuery" class="collapse">
+<div id="divQuery" class="collapse in" aria-expanded="true">
     <div class="card">
         <div class="form-group">
+            <label for="queryEnviromentID">ID Ambiente</label>
+            <input class="form-control" type="text" id="queryEnviromentID" />
+        </div>
+
+        <div class="form-group">
+            <label for="queryCollectionIDRequest">ID Colección</label>
+            <input class="form-control" type="text" id="queryCollectionIDRequest" />
+        </div>
+
+        <div class="form-group">
             <label for="queryInput">¿Qué le provoca hoy?</label>
-            <input class="form-control" type="text" name="queryInput" placeholder="Escriba su consulta..." />
+            <input class="form-control" type="text" id="queryInput" value="@ViewData["queryDefault"]" />
         </div>
 
         <button id="btnQuery" class="btn btn-success">Consultar</button>
+
+        <div id="queryResults" class="hidden">
+            <p id="pQueryKeyWord" class="alert alert-danger" style="margin-top:2rem;"></p>
+            <p id="pQueryOutPut" class="alert alert-warning" style="margin-top:2rem;"></p>
+        </div>
     </div>
 
 </div>
@@ -229,13 +244,56 @@
 
         $(function () {
 
+            $("#btnQuery").on("click", function () {
+                var _environmentid = $("#queryEnviromentID").val();
+                var _collectionid = $("#queryCollectionIDRequest").val();
+                var _queryrequest = $("#queryInput").val();
+
+                if (_environmentid == undefined) {
+                    alert("Debe ingresar un ID de Ambiente");
+                    return;
+                }
+
+                if (_collectionid == undefined) {
+                    alert("Debe ingresar un ID de Colección");
+                    return;
+                }
+
+                if (_queryrequest == undefined) {
+                    alert("Debe ingresar una consulta");
+                    return;
+                }
+
+                if (!$("#queryResults").hasClass("hidden")) {
+                    $("#queryResults").addClass("hidden");
+                }
+
+                $.ajax({
+                    url: '@Url.Action("QueryRequest", "Home")',
+                    method: 'POST',
+                    data: { environmentid: _environmentid, collectionid: _collectionid, queryrequest: _queryrequest }
+                }).done(function (response) {
+                    $("#pQueryOutPut").html(renderjson.set_show_to_level(4)(response));
+                    $("#pQueryKeyWord").text(response.results[0].enriched_text.keywords[0].text + " (relevancia: " + response.results[0].enriched_text.keywords[0].relevance * 100 + "%)");
+                    $("#queryResults").removeClass("hidden");
+
+                }).fail(function (jqXHR, textStatus) {
+                    alert("Error de sistema: " + textStatus);
+                });
+
+            });
+
+            $("#jsonDocuments").html(renderjson.set_show_to_level(3)(@Html.Raw(ViewData["Documents"])));
+
 
             $.ajax({
                 url: '@Url.Action("GetEnvironments", "Home")',
                 method: 'POST',
                 dataType: 'json'
             })
-            .done(function (result) {
+                .done(function (result) {
+
+                $("#queryEnviromentID").val(result.environments[1].environment_id);
 
                 $('#tblEnviroment').DataTable({
                     data: result.environments,
@@ -275,6 +333,8 @@
                 dataType: 'json'
             })
             .done(function (result) {
+
+                $("#queryCollectionIDRequest").val(result.collections[0].collection_id);
 
                 $('#tblCollections').DataTable({
                     data: result.collections,
@@ -530,7 +590,7 @@
             $('#btnEliminarDocumentID').click(function () {
 
                 var _documentid = $("#queryDocumentID").val();
-                var _collectionid = $("#queryCollectionID").val();
+                var _collectionid = $("#queryCollectionIDRequest").val();
 
                 if (_collectionid == null || _collectionid == undefined || _collectionid == "") {
                     alert("Debe ingresar un ID de Colección");
@@ -558,9 +618,7 @@
                     });
             });
 
-            $("#btnQuery").click(function () {
-                alert("En desarrollo");
-            });
+
 
         }); //End Init
 

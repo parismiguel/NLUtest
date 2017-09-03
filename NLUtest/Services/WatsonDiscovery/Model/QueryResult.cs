@@ -46,6 +46,15 @@ namespace IBM.WatsonDeveloperCloud.Discovery.v1.Model
 
         [JsonProperty("extracted_metadata", NullValueHandling = NullValueHandling.Ignore)]
         public object Extracted_Metadata { get; set; }
+
+        [JsonProperty("html", NullValueHandling = NullValueHandling.Ignore)]
+        public string html { get; set; }
+
+        [JsonProperty("text", NullValueHandling = NullValueHandling.Ignore)]
+        public string text { get; set; }
+
+        [JsonProperty("enriched_text", NullValueHandling = NullValueHandling.Ignore)]
+        public object enriched_text { get; set; }
     }
 
 }
