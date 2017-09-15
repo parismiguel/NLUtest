@@ -26,6 +26,7 @@ using IBM.WatsonDeveloperCloud.Service;
 using Newtonsoft.Json;
 using System;
 using NLUtest.Models;
+using System.Net.Http.Headers;
 
 namespace IBM.WatsonDeveloperCloud.Discovery.v1
 {
@@ -382,7 +383,7 @@ namespace IBM.WatsonDeveloperCloud.Discovery.v1
 
             return result;
         }
-        public DocumentAccepted AddDocument(string environmentId, string collectionId, string configurationId = null, System.IO.Stream file = null, string metadata = null, string configuration = null)
+        public DocumentAccepted AddDocument(string environmentId, string collectionId, string configurationId = null, System.IO.Stream file = null, string metadata = null, string configuration = null, string title = null)
         {
             if (string.IsNullOrEmpty(environmentId))
                 throw new ArgumentNullException(nameof(environmentId));
@@ -401,7 +402,10 @@ namespace IBM.WatsonDeveloperCloud.Discovery.v1
                 if (file != null)
                 {
                     var fileContent = new ByteArrayContent((file as Stream).ReadAllBytes());
-                    formData.Add(fileContent, "file");
+
+                    formData.Add(fileContent, "file", title + ".html");
+
+
                 }
 
                 if (metadata != null)

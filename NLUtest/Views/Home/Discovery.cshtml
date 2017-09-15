@@ -48,9 +48,9 @@
 </div>
 
 
-    <a class="btn btn-primary btn-block" data-toggle="collapse" href="#divConfig" aria-expanded="true" aria-controls="divConfig">
-        Configuraciones
-    </a>
+<a class="btn btn-primary btn-block" data-toggle="collapse" href="#divConfig" aria-expanded="true" aria-controls="divConfig">
+    Configuraciones <span style="font-size:small">(consultar para asociar modelo)</span>
+</a>
 
 
 <div id="divConfig" class="collapse">
@@ -100,7 +100,7 @@
     <div class="card" id="divModelUpdate" hidden>
         <div class="form-group">
             <label for="queryModelID">ID Model</label>
-            <input class="form-control" type="text" id="queryModelID" placeholder="Seleccione su modelo" />
+            <input class="form-control" type="text" id="queryModelID" value="@ViewData["modelID"]" placeholder="Seleccione su modelo" />
         </div>
 
         <button id="btnModelID" class="btn btn-success">Actualizar</button>
@@ -111,9 +111,9 @@
 
 
 
-    <a class="btn btn-primary btn-block" data-toggle="collapse" href="#divCollections" aria-expanded="true" aria-controls="divCollections">
-        Colecciones
-    </a>
+<a class="btn btn-primary btn-block" data-toggle="collapse" href="#divCollections" aria-expanded="true" aria-controls="divCollections">
+    Colecciones <span style="font-size:small">(consultar para ver cantidad de documentos)</span>
+</a>
 
 <div id="divCollections" class="collapse">
     <table id="tblCollections" class="display" cellspacing="0" style="margin:0;">
@@ -163,21 +163,34 @@
 
 
 
-    <a class="btn btn-primary btn-block" data-toggle="collapse" href="#divDocuments" aria-expanded="true" aria-controls="divDocuments">
-        Documentos
-    </a>
+<a class="btn btn-primary btn-block" data-toggle="collapse" href="#divDocuments" aria-expanded="true" aria-controls="divDocuments">
+    Documentos
+</a>
 
 <div id="divDocuments" class="collapse">
     <p id="jsonDocuments">@ViewData["Documents"]</p>
 
     <div class="card">
+
+        <div class="form-group">
+            <label for="documentCollectionID">ID Colección</label>
+            <input class="form-control" type="text" id="documentCollectionID" placeholder="Seleccione su colección" />
+        </div>
+
+        <div class="form-group">
+            <label for="documentConfigID">ID Configuración</label>
+            <input class="form-control" type="text" id="documentConfigID" placeholder="Seleccione su configuración" />
+        </div>
+
+
         <div class="form-group">
             <label for="queryDocumentID">ID Documento</label>
-            <input class="form-control" type="text" id="queryDocumentID" placeholder="Seleccione su colección" />
+            <input class="form-control" type="text" id="queryDocumentID" placeholder="Seleccione su documento" />
         </div>
 
         <button id="btnEliminarDocumentID" class="btn btn-danger">Eliminar</button>
-        <button id="btnSave" type="submit" class="btn btn-primary">Agregar Documento</button>
+        <button id="btnSaveDocument" type="submit" class="btn btn-success">Agregar Documento</button>
+        <button id="btnDetailsDocument" type="submit" class="btn btn-primary">Detalles</button>
 
         <div id="createdDoc" style="margin-top:1rem;margin-bottom:1rem;"></div>
     </div>
@@ -207,11 +220,17 @@
 
         <button id="btnQuery" class="btn btn-success">Consultar</button>
 
-        <div id="queryResults" class="hidden">
-            <p id="pQueryKeyWord" class="alert alert-danger" style="margin-top:2rem;"></p>
-            <p id="pQueryOutPut" class="alert alert-warning" style="margin-top:2rem;"></p>
-        </div>
+        <button id="btnGoogle" class="btn btn-danger">Google</button>
+
     </div>
+
+    <div id="queryLinks" class="alert alert-warning hidden" style="display: inline-grid;"></div>
+
+    <div id="queryResults" class="hidden">
+        <p id="pQueryKeyWord" class="alert alert-danger" style="margin-top:2rem;"></p>
+        <p id="pQueryOutPut" class="alert alert-warning" style="margin-top:2rem;"></p>
+    </div>
+
 
 </div>
 
@@ -268,18 +287,87 @@
                     $("#queryResults").addClass("hidden");
                 }
 
+                if (!$("#queryLinks").hasClass("hidden")) {
+                    $("#queryLinks").addClass("hidden");
+                }
+
                 $.ajax({
                     url: '@Url.Action("QueryRequest", "Home")',
                     method: 'POST',
                     data: { environmentid: _environmentid, collectionid: _collectionid, queryrequest: _queryrequest }
                 }).done(function (response) {
                     $("#pQueryOutPut").html(renderjson.set_show_to_level(4)(response));
+
+                    $("#pQueryKeyWord").removeClass("hidden");
                     $("#pQueryKeyWord").text(response.results[0].enriched_text.keywords[0].text + " (relevancia: " + response.results[0].enriched_text.keywords[0].relevance * 100 + "%)");
+
                     $("#queryResults").removeClass("hidden");
+
+                    $("#queryLinks").html(null);
 
                 }).fail(function (jqXHR, textStatus) {
                     alert("Error de sistema: " + textStatus);
                 });
+
+            });
+
+            $("#btnGoogle").on("click", function () {
+
+                var apiKey = "AIzaSyCgeMzIPb9LnN92vV8ZbbCWhFS1MtF51n0";
+                var context = "000820817763802558027:eqsc9_3gk2g";
+
+                var query = $("#queryInput").val();
+
+                if (query == "") {
+                    return;
+                }
+
+                var url = "https://www.googleapis.com/customsearch/v1?key=" + apiKey + "&cx=" + context + "&q=" + query;
+
+                $("#queryLinks").html(null);
+
+                $.get(url, function (response) {
+                    $("#pQueryOutPut").html(renderjson.set_show_to_level(2)(response));
+                    $("#pQueryKeyWord").addClass("hidden");
+                    $("#queryResults").removeClass("hidden");
+                    $("#queryLinks").removeClass("hidden");
+
+                    $.each(response.items, function (item) {
+                        var linkHtml = "<a style='margin: .5rem 0' href='" + this.link + "' target='_blank'>" + this.title + "</a>";
+                        $("#queryLinks").append(linkHtml);
+                    });
+
+                    if (response.items.length > 0) {
+                        var button = '<button style="margin:1rem 0;" id="btnLoadDocs" class="btn btn-primary">Cargar Documentos</button>';
+                        $("#queryLinks").append(button);
+                    }
+                });
+
+            });
+
+            //Upload Google Custom Search Links to Discover Service
+
+            $('#queryLinks').on('click', '#btnLoadDocs', function () {
+
+                var _list = [];
+
+                $("#queryLinks a").each(function (item) {
+                    var link = $(this).attr('href');
+
+                    _list.push(link);
+                });
+
+                $.ajax({
+                    url: '@Url.Action("AddDocumentList", "Home")',
+                    method: 'POST',
+                    data: { list: _list }
+                })
+                    .done(function (obj) {
+                        $("#queryLinks").html(renderjson.set_show_to_level(2)(obj));
+                    })
+                    .fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
 
             });
 
@@ -314,6 +402,9 @@
                 dataType: 'json'
             })
             .done(function (result) {
+                $("#queryConfigID").val(result.configurations[0].configuration_id);
+
+                $("#documentConfigID").val(result.configurations[0].configuration_id);
 
                 $('#tblConfigurations').DataTable({
                     data: result.configurations,
@@ -335,6 +426,7 @@
             .done(function (result) {
 
                 $("#queryCollectionIDRequest").val(result.collections[0].collection_id);
+                $("#documentCollectionID").val(result.collections[0].collection_id);
 
                 $('#tblCollections').DataTable({
                     data: result.collections,
@@ -350,10 +442,11 @@
                 });
             });
 
-            $('#btnSave').click(function () {
 
-                var _configid = $("#queryConfigID").val();
-                var _collecctionid = $("#queryCollectionID").val();
+             $('#btnSaveDocument').click(function () {
+
+                var _configid = $("#documentConfigID").val();
+                var _collectionid = $("#documentCollectionID").val();
 
 
                 if (_configid == null || _configid == undefined) {
@@ -362,7 +455,7 @@
                 }
 
 
-                if (_collecctionid == null || _collecctionid == undefined) {
+                if (_collectionid == null || _collectionid == undefined) {
                     alert("Debe ingresar un Código de Colección");
                     return;
                 }
@@ -370,18 +463,89 @@
                 var request = $.ajax({
                     url: '@Url.Action("AddDocument", "Home")',
                     method: 'POST',
-                    data: { collectionid: _collecctionid, configid: _configid }
+                    data: { collectionid: _collectionid, configid: _configid }
                 });
 
                 request.done(function (obj) {
                     $("#createdDoc").addClass("alert alert-info");
-                        $("#createdDoc").text("Nuevo documento creado. ID: " + obj);
+                    $("#createdDoc").text("Nuevo documento creado. ID: " + obj);
+
+                    $("#queryDocumentID").val(obj);
                     });
 
                     request.fail(function (jqXHR, textStatus) {
                         alert("Error de sistema: " + textStatus);
                     });
             });
+
+
+            $('#btnDetailsDocument').click(function () {
+
+                var _documentid = $("#queryDocumentID").val();
+                var _collectionid = $("#documentCollectionID").val();
+
+
+                if (_collectionid == null || _collectionid == undefined || _collectionid == "") {
+                    alert("Debe ingresar un ID de Colección");
+                    return;
+                }
+
+                if (_documentid == null || _documentid == undefined || _documentid == "") {
+                    alert("Debe ingresar un ID de Documento");
+                    return;
+                }
+
+                var request = $.ajax({
+                        url: '@Url.Action("DetailsDocument", "Home")',
+                        method: 'POST',
+                        data: { collectionid: _collectionid, documentid: _documentid }
+                });
+
+                request.done(function (obj) {
+                    $("#createdDoc").addClass("alert alert-info");
+                    $("#createdDoc").html(renderjson.set_show_to_level(3)(obj));
+                });
+
+                request.fail(function (jqXHR, textStatus) {
+                    alert("Error de sistema: " + textStatus);
+                });
+            });
+
+
+            $('#btnEliminarDocumentID').click(function () {
+
+                var _documentid = $("#queryDocumentID").val();
+                //var _configid = $("#documentConfigID").val();
+                var _collectionid = $("#documentCollectionID").val();
+
+
+                if (_collectionid == null || _collectionid == undefined || _collectionid == "") {
+                    alert("Debe ingresar un ID de Colección");
+                    return;
+                }
+
+                if (_documentid == null || _documentid == undefined || _documentid == "") {
+                    alert("Debe ingresar un ID de Documento");
+                    return;
+                }
+
+                var request = $.ajax({
+                        url: '@Url.Action("DeleteDocument", "Home")',
+                        method: 'POST',
+                        data: { collectionid: _collectionid, documentid: _documentid }
+                });
+
+                request.done(function (obj) {
+                    alert("Se eliminó el Documento: " + obj);
+
+                    });
+
+                    request.fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
+            });
+
+
 
 
             $('#btnCreateConfig').click(function () {
@@ -585,38 +749,6 @@
                         alert("Error de sistema: " + textStatus);
                     });
              });
-
-
-            $('#btnEliminarDocumentID').click(function () {
-
-                var _documentid = $("#queryDocumentID").val();
-                var _collectionid = $("#queryCollectionIDRequest").val();
-
-                if (_collectionid == null || _collectionid == undefined || _collectionid == "") {
-                    alert("Debe ingresar un ID de Colección");
-                    return;
-                }
-
-                if (_documentid == null || _documentid == undefined || _documentid == "") {
-                    alert("Debe ingresar un ID de Documento");
-                    return;
-                }
-
-                var request = $.ajax({
-                        url: '@Url.Action("DeleteDocument", "Home")',
-                        method: 'POST',
-                        data: { collectionid: _collectionid, documentid: _documentid }
-                });
-
-                request.done(function (obj) {
-                    alert("Se eliminó el Documento: " + obj);
-
-                    });
-
-                    request.fail(function (jqXHR, textStatus) {
-                        alert("Error de sistema: " + textStatus);
-                    });
-            });
 
 
 

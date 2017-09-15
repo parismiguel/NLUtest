@@ -14,6 +14,8 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System.IO;
 using IBM.WatsonDeveloperCloud.VisualRecognition.v3;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace NLUtest.Controllers
 {
@@ -45,7 +47,7 @@ namespace NLUtest.Controllers
 
         private static string _createdEnvironmentId = "b1612bd9-6f9f-485f-84f4-c9d4740f509b";
         //private static string _createdConfigurationId = "31d60f6f-dc38-48bf-be56-d62ce5571594";
-        //private static string _createdCollectionId = "0cffb933-4273-4696-a822-4e26e074c0b9";
+        //private static string _createdCollectionId = "9fe7fde3-3ffa-4773-856f-f88e2a8695e6";
         private static string _createdDocumentId;
 
         //private string _createdEnvironmentName = "dotnet-test-environment";
@@ -85,7 +87,7 @@ namespace NLUtest.Controllers
         {
 
             AnalysisResults model = new AnalysisResults();
-            ViewData["modelID"] = "10:d9c5bbdf-f77f-4561-889c-098854e301aa";
+            ViewData["modelID"] = "10:7beae556-4bc7-4873-9506-039173e76037";
 
             try
             {
@@ -133,9 +135,12 @@ namespace NLUtest.Controllers
             ViewData["Documents"] = GetDocuments();
             ViewData["queryDefault"] = "¿Donde puedo comer el mejor lomo saltado?";
 
+            ViewData["modelID"] = "04529d40-bd37-4de1-af66-ed08fadd0e5c";
+
             return View();
         }
 
+        #region Environments
 
         [HttpPost]
         public IActionResult GetEnvironments()
@@ -157,6 +162,48 @@ namespace NLUtest.Controllers
             }
         }
 
+
+        #endregion
+
+        #region Configurations
+
+        [HttpPost]
+        public IActionResult GetConfigurations()
+        {
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
+
+            var result = _discovery.ListConfigurations(_createdEnvironmentId);
+
+            if (result != null)
+            {
+                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return Json(result);
+            }
+            else
+            {
+                return Json("Resultado nulo");
+            }
+        }
+
+        [HttpPost]
+        public IActionResult GetConfiguration(string configid)
+        {
+
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
+
+            var result = _discovery.GetConfiguration(_createdEnvironmentId, configid);
+
+            if (result != null)
+            {
+                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return Json(result);
+            }
+            else
+            {
+                return Json("Resultado nulo");
+            }
+
+        }
 
         [HttpPost]
         public IActionResult CreateConfiguration(string configname, string modelid)
@@ -391,26 +438,6 @@ namespace NLUtest.Controllers
         }
 
         [HttpPost]
-        public IActionResult GetConfigurations()
-        {
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
-
-            var result = _discovery.ListConfigurations(_createdEnvironmentId);
-
-            if (result != null)
-            {
-                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
-                return Json(result);
-            }
-            else
-            {
-                return Json("Resultado nulo");
-            }
-        }
-
-
-
-        [HttpPost]
         public IActionResult UpdateConfiguration(string configid, string modelid)
         {
             _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
@@ -616,7 +643,6 @@ namespace NLUtest.Controllers
             }
 
 
-
             Configuration2 config = _discovery.GetConfiguration(_createdEnvironmentId, configid);
 
             config.Enrichments[0] = _enrichment;
@@ -636,7 +662,6 @@ namespace NLUtest.Controllers
             }
         }
 
-
         [HttpPost]
         public IActionResult DeleteConfiguration(string configid)
         {
@@ -654,6 +679,11 @@ namespace NLUtest.Controllers
                 return Json("Resultado nulo");
             }
         }
+
+
+        #endregion
+
+        #region Collections
 
         [HttpPost]
         public IActionResult GetCollections()
@@ -673,27 +703,23 @@ namespace NLUtest.Controllers
             }
         }
 
-        private string GetDocuments()
+        [HttpPost]
+        public IActionResult GetCollection(string collectionid)
         {
-            var collectionid = "9fe7fde3-3ffa-4773-856f-f88e2a8695e6";
-            var query = "return=extracted_metadata&version=2017-08-01";
-            //var query = "return=extracted_metadata";
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
-            var result = _discovery.Query(_createdEnvironmentId, collectionid, null, query);
+            var result = _discovery.GetCollection(_createdEnvironmentId, collectionid);
 
             if (result != null)
             {
-                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
-                return model;
+                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return Json(result);
             }
             else
             {
-                return "Resultado nulo";
+                return Json("Resultado nulo");
             }
         }
-
-
-
 
         [HttpPost]
         public IActionResult CreateCollection(string name, string configid)
@@ -721,26 +747,6 @@ namespace NLUtest.Controllers
         }
 
         [HttpPost]
-        public IActionResult GetCollection(string collectionid)
-        {
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
-
-            var result = _discovery.GetCollection(_createdEnvironmentId, collectionid);
-
-            if (result != null)
-            {
-                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
-                return Json(result);
-            }
-            else
-            {
-                return Json("Resultado nulo");
-            }
-        }
-
-
-
-        [HttpPost]
         public IActionResult DeleteCollection(string collectionid)
         {
 
@@ -763,10 +769,38 @@ namespace NLUtest.Controllers
         }
 
 
+        #endregion
 
-        [HttpGet]
+        #region Documents
+
+        private string GetDocuments()
+        {
+            var collectionid = "9fe7fde3-3ffa-4773-856f-f88e2a8695e6";
+            var query = "return=extracted_metadata&version=2017-08-01";
+            //var query = "return=extracted_metadata";
+
+            var result = _discovery.Query(_createdEnvironmentId, collectionid, null, query);
+
+            if (result != null)
+            {
+                var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return model;
+            }
+            else
+            {
+                return "Resultado nulo";
+            }
+        }
+
+        [HttpPost]
         public IActionResult AddDocument(string collectionid, string configid)
         {
+            //_createdEnvironmentId = "b1612bd9-6f9f-485f-84f4-c9d4740f509b"; //byod
+            //collectionid = "9fe7fde3-3ffa-4773-856f-f88e2a8695e6"; //JamaPeruCollection
+            //configid = "9726e2b6-5671-41c0-bd4d-2a9512ce02ee"; //Config20170801
+
+            //_filepathToIngest = @"DiscoveryTestData\watson_beats_jeopardy.html";
+            //_metadata = "{\"Creator\": \"Paris Pantigoso\",\"Subject\": \"Discovery example\"}";
 
             _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
@@ -789,6 +823,80 @@ namespace NLUtest.Controllers
             }
         }
 
+        [HttpPost]
+        public IActionResult AddDocumentList(List<string> list)
+        {
+            //_createdEnvironmentId = "b1612bd9-6f9f-485f-84f4-c9d4740f509b"; //byod
+
+            var collectionid = "9fe7fde3-3ffa-4773-856f-f88e2a8695e6"; //JamaPeruCollection
+            var configid = "9726e2b6-5671-41c0-bd4d-2a9512ce02ee"; //Config20170801
+
+            //_filepathToIngest = @"DiscoveryTestData\watson_beats_jeopardy.html";
+            //_metadata = "{\"file_type\": \"text/html\",\"creator\": \"Paris Pantigoso\",\"subject\": \"Discovery example\"}";
+
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
+
+            var listResult = new List<DocumentAccepted>();
+
+            //int counter = 0;
+
+            foreach (var item in list)
+            {
+                //if (counter == 1)
+                //{
+                //    return Json(listResult);
+                //}
+
+                using (WebClient client = new WebClient())
+                {
+
+                    byte[] byteArray = client.DownloadData(item);
+
+                    string fileType = client.ResponseHeaders[HttpResponseHeader.ContentType];
+
+                    string source = client.DownloadString(item);
+                    string _title = Regex.Match(source, @"\<title\b[^>]*\>\s*(?<Title>[\s\S]*?)\</title\>", RegexOptions.IgnoreCase).Groups["Title"].Value;
+
+                    using (MemoryStream _stream = new MemoryStream(byteArray))
+                    {
+                        DocumentAccepted result = _discovery.AddDocument(_createdEnvironmentId, collectionid, configid, _stream as Stream, _metadata, null, _title);
+
+                        if (result != null)
+                        {
+                            listResult.Add(result);
+                        }
+                    }
+
+                }
+
+
+                //counter++;
+
+            }
+
+            return Json(listResult);
+
+        }
+
+
+
+        [HttpPost]
+        public IActionResult DetailsDocument(string collectionid, string documentid)
+        {
+            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
+
+            var result = _discovery.GetDocumentStatus(_createdEnvironmentId, collectionid, documentid);
+
+            if (result != null)
+            {
+                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
+                return Json(result);
+            }
+            else
+            {
+                return Json("Resultado nulo");
+            }
+        }
 
         [HttpPost]
         public IActionResult DeleteDocument(string collectionid, string documentid)
@@ -808,27 +916,7 @@ namespace NLUtest.Controllers
             }
         }
 
-
-        [HttpPost]
-        public IActionResult GetConfiguration(string configid)
-        {
-
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
-
-            var result = _discovery.GetConfiguration(_createdEnvironmentId, configid);
-
-            if (result != null)
-            {
-                //var model = JsonConvert.SerializeObject(result, Formatting.Indented);
-                return Json(result);
-            }
-            else
-            {
-                return Json("Resultado nulo");
-            }
-
-        }
-
+        #endregion
 
 
         #region Query
@@ -862,6 +950,7 @@ namespace NLUtest.Controllers
         }
         #endregion
 
+
         public IActionResult VisualR()
         {
             ViewData["Message"] = "Visual Recognition";
@@ -874,33 +963,6 @@ namespace NLUtest.Controllers
 
 
             return View();
-        }
-
-        // Get html page content with c# class
-        public static string Get_HTML(string Url)
-        {
-            System.Net.WebResponse Result = null;
-            string Page_Source_Code;
-            try
-            {
-                System.Net.WebRequest req = System.Net.WebRequest.Create(Url);
-                Result = req.GetResponse();
-                System.IO.Stream RStream = Result.GetResponseStream();
-                System.IO.StreamReader sr = new System.IO.StreamReader(RStream);
-                new System.IO.StreamReader(RStream);
-                Page_Source_Code = sr.ReadToEnd();
-                sr.Dispose();
-            }
-            catch
-            {
-                // error while reading the url: the url dosen’t exist, connection problem...
-                Page_Source_Code = "";
-            }
-            finally
-            {
-                if (Result != null) Result.Close();
-            }
-            return Page_Source_Code;
         }
 
         public IActionResult Error()
