@@ -87,7 +87,7 @@ namespace NLUtest.Controllers
         {
 
             AnalysisResults model = new AnalysisResults();
-            ViewData["modelID"] = "10:7beae556-4bc7-4873-9506-039173e76037";
+            ViewData["modelID"] = "10:84885eae-87bf-42e8-9ddf-e41327d50429";
 
             try
             {
@@ -135,7 +135,7 @@ namespace NLUtest.Controllers
             ViewData["Documents"] = GetDocuments();
             ViewData["queryDefault"] = "¿Donde puedo comer el mejor lomo saltado?";
 
-            ViewData["modelID"] = "04529d40-bd37-4de1-af66-ed08fadd0e5c";
+            ViewData["modelID"] = "84a2997a-4fe8-410c-9de2-5103f41006c7";
 
             return View();
         }
@@ -834,47 +834,55 @@ namespace NLUtest.Controllers
             //_filepathToIngest = @"DiscoveryTestData\watson_beats_jeopardy.html";
             //_metadata = "{\"file_type\": \"text/html\",\"creator\": \"Paris Pantigoso\",\"subject\": \"Discovery example\"}";
 
-            _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
-
-            var listResult = new List<DocumentAccepted>();
-
-            //int counter = 0;
-
-            foreach (var item in list)
+            try
             {
-                //if (counter == 1)
-                //{
-                //    return Json(listResult);
-                //}
+                _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
 
-                using (WebClient client = new WebClient())
+                var listResult = new List<DocumentAccepted>();
+
+                //int counter = 0;
+
+                foreach (var item in list)
                 {
+                    //if (counter == 1)
+                    //{
+                    //    return Json(listResult);
+                    //}
 
-                    byte[] byteArray = client.DownloadData(item);
-
-                    string fileType = client.ResponseHeaders[HttpResponseHeader.ContentType];
-
-                    string source = client.DownloadString(item);
-                    string _title = Regex.Match(source, @"\<title\b[^>]*\>\s*(?<Title>[\s\S]*?)\</title\>", RegexOptions.IgnoreCase).Groups["Title"].Value;
-
-                    using (MemoryStream _stream = new MemoryStream(byteArray))
+                    using (WebClient client = new WebClient())
                     {
-                        DocumentAccepted result = _discovery.AddDocument(_createdEnvironmentId, collectionid, configid, _stream as Stream, _metadata, null, _title);
 
-                        if (result != null)
+                        byte[] byteArray = client.DownloadData(item);
+
+                        string fileType = client.ResponseHeaders[HttpResponseHeader.ContentType];
+
+                        string source = client.DownloadString(item);
+                        string _title = Regex.Match(source, @"\<title\b[^>]*\>\s*(?<Title>[\s\S]*?)\</title\>", RegexOptions.IgnoreCase).Groups["Title"].Value;
+
+                        using (MemoryStream _stream = new MemoryStream(byteArray))
                         {
-                            listResult.Add(result);
+                            DocumentAccepted result = _discovery.AddDocument(_createdEnvironmentId, collectionid, configid, _stream as Stream, _metadata, null, _title);
+
+                            if (result != null)
+                            {
+                                listResult.Add(result);
+                            }
                         }
+
                     }
+
+                    //counter++;
 
                 }
 
-
-                //counter++;
+                return Json(listResult);
 
             }
+            catch (Exception ex)
+            {
+                return Json(ex.Message);
+            }
 
-            return Json(listResult);
 
         }
 
