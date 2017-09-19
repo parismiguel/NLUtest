@@ -54,7 +54,107 @@ namespace IBM.WatsonDeveloperCloud.Discovery.v1.Model
         public string text { get; set; }
 
         [JsonProperty("enriched_text", NullValueHandling = NullValueHandling.Ignore)]
-        public object enriched_text { get; set; }
+        public Enriched_Text_Result enriched_text { get; set; }
     }
+
+
+    public class Enriched_Text_Result
+    {
+        public EntityResult[] entities { get; set; }
+        public SentimentResult sentiment { get; set; }
+        public Semantic_RolesResult[] semantic_roles { get; set; }
+        public ConceptResult[] concepts { get; set; }
+        public CategoryResult[] categories { get; set; }
+        public RelationResult[] relations { get; set; }
+        public KeywordResult[] keywords { get; set; }
+    }
+
+    public class SentimentResult
+    {
+        public DocumentResult document { get; set; }
+    }
+
+    public class DocumentResult
+    {
+        public float score { get; set; }
+        public string label { get; set; }
+    }
+
+    public class EntityResult
+    {
+        public string type { get; set; }
+        public string text { get; set; }
+        public Disambiguation0Result disambiguation { get; set; }
+        public int count { get; set; }
+    }
+
+    public class Disambiguation0Result
+    {
+        public string[] subtype { get; set; }
+    }
+
+    public class Semantic_RolesResult
+    {
+        public string sentence { get; set; }
+        public ObjectResult _object { get; set; }
+        public ActionResult action { get; set; }
+    }
+
+    public class ObjectResult
+    {
+        public string text { get; set; }
+    }
+
+    public class ActionResult
+    {
+        public string text { get; set; }
+    }
+
+    public class ConceptResult
+    {
+        public string text { get; set; }
+        public float relevance { get; set; }
+        public string dbpedia_resource { get; set; }
+    }
+
+    public class CategoryResult
+    {
+        public float score { get; set; }
+        public string label { get; set; }
+    }
+
+    public class RelationResult
+    {
+        public string type { get; set; }
+        public string sentence { get; set; }
+        public float score { get; set; }
+        public ArgumentResult[] arguments { get; set; }
+    }
+
+    public class ArgumentResult
+    {
+        public string text { get; set; }
+        public Entity1Result[] entities { get; set; }
+    }
+
+    public class Entity1Result
+    {
+        public string type { get; set; }
+        public string text { get; set; }
+        public Disambiguation1Result disambiguation { get; set; }
+    }
+
+    public class Disambiguation1Result
+    {
+        public string[] subtype { get; set; }
+    }
+
+    public class KeywordResult
+    {
+        public string text { get; set; }
+        public float relevance { get; set; }
+    }
+
+
 
 }

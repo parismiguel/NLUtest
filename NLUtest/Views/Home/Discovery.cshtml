@@ -224,16 +224,26 @@
 
     </div>
 
+    <div id="queryNLUparse" class="alert alert-info hidden" style="display:inline-grid;"></div>
+
     <div id="queryLinks" class="alert alert-warning hidden" style="display: inline-grid;"></div>
 
+    <table id="tableEntities" class="table table-bordered table-responsive table-striped">
+        <tbody></tbody>
+    </table>
+
     <div id="queryResults" class="hidden">
-        <p id="pQueryKeyWord" class="alert alert-danger" style="margin-top:2rem;"></p>
+        <p id="pQueryParsed" class="alert alert-danger" style="margin-top:2rem;"></p>
+        <p id="pQueryKeyWord" class="alert alert-success" style="margin-top:2rem;"></p>
         <p id="pQueryOutPut" class="alert alert-warning" style="margin-top:2rem;"></p>
     </div>
 
 
 </div>
 
+<div id="wait" style="display:none;width:69px;height:89px;border:1px solid black;position:relative;top:50%;left:50%;padding:2px;">
+    <img src='~/images/demo_wait.gif' width="64" height="64" /><br>Cargando...
+</div>
 
 @section Scripts {
 
@@ -263,10 +273,22 @@
 
         $(function () {
 
+            $(document).ajaxStart(function () {
+                $("#wait").css("display", "block");
+            });
+
+            $(document).ajaxComplete(function () {
+                $("#wait").css("display", "none");
+            });
+
             $("#btnQuery").on("click", function () {
                 var _environmentid = $("#queryEnviromentID").val();
                 var _collectionid = $("#queryCollectionIDRequest").val();
                 var _queryrequest = $("#queryInput").val();
+
+                var _dish;
+                var _district;
+                var _country;
 
                 if (_environmentid == undefined) {
                     alert("Debe ingresar un ID de Ambiente");
@@ -291,30 +313,92 @@
                     $("#queryLinks").addClass("hidden");
                 }
 
-                $.ajax({
-                    url: '@Url.Action("QueryRequest", "Home")',
+                //Parse Request with NLU
+                 $.ajax({
+                    url: '@Url.Action("QueryNLUparser", "Home")',
                     method: 'POST',
-                    data: { environmentid: _environmentid, collectionid: _collectionid, queryrequest: _queryrequest }
-                }).done(function (response) {
-                    $("#pQueryOutPut").html(renderjson.set_show_to_level(4)(response));
+                    data: { queryRaw: _queryrequest }
+                 }).done(function (response) {
+                     $("#queryNLUparse").html(renderjson.set_show_to_level(1)(response));
+                     $("#queryNLUparse").removeClass("hidden");
 
-                    $("#pQueryKeyWord").removeClass("hidden");
-                    $("#pQueryKeyWord").text(response.results[0].enriched_text.keywords[0].text + " (relevancia: " + response.results[0].enriched_text.keywords[0].relevance * 100 + "%)");
+                     $("#tableEntities > tbody").html(null);
 
-                    $("#queryResults").removeClass("hidden");
+                     $.each(response.entities, function (item) {
+                         var linkHtml = "<tr><td>" + this.type + "</td><td>" + this.text + "</td></tr>";
+                         $("#tableEntities > tbody").append(linkHtml);
 
-                    $("#queryLinks").html(null);
+                         switch (this.type) {
+                             case "FOOD_DISH":
+                                 dish = this.text;
+                                 break;
 
-                }).fail(function (jqXHR, textStatus) {
-                    alert("Error de sistema: " + textStatus);
-                });
+                             case "LOCAL_COUNTRY":
+                                 _country = this.text;
+                                 break;
 
+                             case "LOCAL_DISTRICT":
+                                 _district = this.text;
+                                 break;
+                             default:
+                         }
+
+                     });
+
+                     if (_district == null) {
+                         _district = "Lima";
+                     }
+
+                     if (_country == null) {
+                         _country = "Perú";
+                     }
+
+                     _queryrequest = `${_queryrequest} ${_district} ${_country}`;
+
+                     $("#pQueryParsed").html(_queryrequest);
+
+
+                     //Run Discovery Service
+                    $.ajax({
+                        url: '@Url.Action("QueryRequest", "Home")',
+                        method: 'POST',
+                        data: { environmentid: _environmentid, collectionid: _collectionid, queryrequest: _queryrequest }
+                    }).done(function (response) {
+                        $("#pQueryOutPut").html(renderjson.set_show_to_level(2)(response.obj));
+
+                        $("#pQueryKeyWord").removeClass("hidden");
+
+                        //$("#pQueryKeyWord").text(response.obj.results[0].enriched_text.keywords[0].text + " (relevancia: " + response.obj.results[0].enriched_text.keywords[0].relevance * 100 + "%)");
+                        $("#pQueryKeyWord").html(response.text);
+
+                        $("#queryResults").removeClass("hidden");
+
+                        $("#queryLinks").html(null);
+
+                    }).fail(function (jqXHR, textStatus) {
+                        alert("Error de sistema: " + textStatus);
+                    });
+
+
+
+
+            }).fail(function (jqXHR, textStatus) {
+                alert("Error de sistema: " + textStatus);
             });
+
+
+
+
+            }); //End btnQuery
 
             $("#btnGoogle").on("click", function () {
 
                 var apiKey = "AIzaSyCgeMzIPb9LnN92vV8ZbbCWhFS1MtF51n0";
                 var context = "000820817763802558027:eqsc9_3gk2g";
+
+                var _dish;
+                var _district;
+                var _country;
 
                 var query = $("#queryInput").val();
 
@@ -322,15 +406,74 @@
                     return;
                 }
 
-                var url = "https://www.googleapis.com/customsearch/v1?key=" + apiKey + "&cx=" + context + "&q=" + query;
+                if (!$("#pQueryKeyWord").hasClass("hidden")) {
+                    $("#pQueryKeyWord").addClass("hidden");
+                }
 
-                $("#queryLinks").html(null);
+                if (!$("#queryResults").hasClass("hidden")) {
+                    $("#queryResults").addClass("hidden");
+                }
+
+                if (!$("#queryLinks").hasClass("hidden")) {
+                    $("#queryLinks").addClass("hidden");
+                }
+
+
+                 //Parse Request with NLU
+                 $.ajax({
+                    url: '@Url.Action("QueryNLUparser", "Home")',
+                    method: 'POST',
+                    data: { queryRaw: query }
+                 }).done(function (response) {
+                     $("#queryNLUparse").html(renderjson.set_show_to_level(1)(response));
+                     $("#queryNLUparse").removeClass("hidden");
+
+
+
+                     $.each(response.entities, function (item) {
+                         var linkHtml = "<tr><td>" + this.type + "</td><td>" + this.text + "</td></tr>";
+                         $("#tableEntities > tbody").append(linkHtml);
+
+                         switch (this.type) {
+                             case "FOOD_DISH":
+                                 dish = this.text;
+                                 break;
+
+                             case "LOCAL_COUNTRY":
+                                 _country = this.text;
+                                 break;
+
+                             case "LOCAL_DISTRICT":
+                                 _district = this.text;
+                                 break;
+                             default:
+                         }
+
+                     });
+
+                     if (_district == null) {
+                         _district = "Lima";
+                     }
+
+                     if (_country == null) {
+                         _country = "Perú";
+                     }
+
+                     query = `${query} ${_district} ${_country}`;
+
+                     $("#pQueryParsed").html(query);
+
+
+                     var url = "https://www.googleapis.com/customsearch/v1?key=" + apiKey + "&cx=" + context + "&q=" + query;
+
+                //$("#wait").css("display", "block");
 
                 $.get(url, function (response) {
                     $("#pQueryOutPut").html(renderjson.set_show_to_level(2)(response));
-                    $("#pQueryKeyWord").addClass("hidden");
+
                     $("#queryResults").removeClass("hidden");
-                    $("#queryLinks").removeClass("hidden");
+
+                    $("#queryLinks").html(null);
 
                     $.each(response.items, function (item) {
                         var linkHtml = "<a style='margin: .5rem 0' href='" + this.link + "' target='_blank'>" + this.title + "</a>";
@@ -341,9 +484,22 @@
                         var button = '<button style="margin:1rem 0;" id="btnLoadDocs" class="btn btn-primary">Cargar Documentos</button>';
                         $("#queryLinks").append(button);
                     }
+
+                    $("#queryLinks").removeClass("hidden");
+
+                }).always(function () {
+                    //$("#wait").css("display", "none");
                 });
 
+
+
+            }).fail(function (jqXHR, textStatus) {
+                alert("Error de sistema: " + textStatus);
             });
+
+
+
+            }); //End btnGoogle
 
             //Upload Google Custom Search Links to Discover Service
 
@@ -753,7 +909,6 @@
 
 
         }); //End Init
-
 
     </script>
 }

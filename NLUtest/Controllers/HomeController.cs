@@ -125,6 +125,20 @@ namespace NLUtest.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        public IActionResult QueryNLUparser(string queryRaw)
+        {
+            _nluModel = "10:84885eae-87bf-42e8-9ddf-e41327d50429";
+
+            _naturalLanguageUnderstandingService = new NaturalLanguageUnderstandingService(userNLU, pswNLU, NaturalLanguageUnderstandingService.NATURAL_LANGUAGE_UNDERSTANDING_VERSION_DATE_2017_02_27);
+
+            AnalysisResults model = new AnalysisResults();
+
+            model = Analyze(_nluModel, queryRaw);
+
+            return Json(model);
+        }
+
         public IActionResult Discovery()
         {
             _discovery = new DiscoveryService(_username, _password, DiscoveryService.DISCOVERY_VERSION_DATE_2017_08_01);
@@ -933,6 +947,7 @@ namespace NLUtest.Controllers
         public IActionResult QueryRequest(string environmentid, string collectionid, string queryrequest)
         {
             QueryResponse model = new QueryResponse();
+            string _text = string.Empty;
 
             try
             {
@@ -944,6 +959,52 @@ namespace NLUtest.Controllers
                 {
                     //model = JsonConvert.SerializeObject(result, Formatting.Indented);
                     model = result;
+
+                    var maxDoc = result.Results.Where(y => y.enriched_text.relations.Count() > 0).OrderByDescending(x => x.Score).FirstOrDefault();
+
+                    var maxDishOf = maxDoc.enriched_text.relations.Where(y => y.type == "dishOf").OrderByDescending(x => x.score).FirstOrDefault();
+
+                    string foodDish, localName, qualityExpression;
+
+                    foreach (var arg in maxDishOf.arguments)
+                    {
+                        foreach (var item in arg.entities)
+                        {
+                            switch (item.type)
+                            {
+                                case "FOOD_DISH":
+                                    foodDish = item.text;
+                                    break;
+                                case "LOCAL_NAME":
+                                    localName = item.text;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+
+                    var firstQualityOf = maxDoc.enriched_text.relations.Where(y => y.type == "qualityOf").FirstOrDefault();
+
+                    var maxQualityOf = maxDoc.enriched_text.relations.Where(y => y.type == "qualityOf").OrderByDescending(x => x.score).FirstOrDefault();
+
+                    foreach (var arg in maxQualityOf.arguments)
+                    {
+                        foreach (var item in arg.entities)
+                        {
+                            switch (item.type)
+                            {
+                                case "QUALITY_EXPRESSION":
+                                    qualityExpression = item.text;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+
+                    _text = string.Format("{0} ({1}%)", maxDishOf.sentence, Math.Round(maxDishOf.score * 100,2));
+                    _text += string.Format("<br/>{0} ({1}%)", firstQualityOf.sentence, Math.Round(firstQualityOf.score * 100, 2));
                 }
             }
             catch (Exception ex)
@@ -954,7 +1015,7 @@ namespace NLUtest.Controllers
                 return Json(ex.Message);
             }
 
-            return Json(model);
+            return Json(new { obj = model, text = _text });
         }
         #endregion
 
@@ -985,14 +1046,14 @@ namespace NLUtest.Controllers
 
             AnalysisResults model = new AnalysisResults();
 
-            model = Analyze(_nluModel);
+            model = Analyze(_nluModel, _nluText);
             return model;
 
         }
         #endregion
 
         #region Analyze
-        public AnalysisResults Analyze(string queryModelID)
+        public AnalysisResults Analyze(string queryModelID, string _nluText)
         {
             List<string> model = new List<string>();
 
